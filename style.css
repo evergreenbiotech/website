@@ -87,7 +87,7 @@ h6,
   font-family: var(--heading-font);
   font-weight: var(--heading-font-weight);
   line-height: var(--heading-line-height);
-  text-transform: capitalize;
+  text-transform: none;
 }
 
 h1.light,
