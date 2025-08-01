@@ -3341,4 +3341,66 @@ input, select, textarea {
 				height: 34px;
 			}
 
+		/* Add to assets/css/main.css */
+
+		/* Style for the container list item (the <li> that holds the button) */
+		#nav ul .language-toggle-wrapper {
+		    /* Adjust these values to position it precisely to the left of the "Menu" item */
+		    display: inline-block; /* Essential for it to sit next to other list items */
+		    vertical-align: middle; /* Helps align it vertically with 'Menu' text */
+		    padding: 0 1em; /* Gives some horizontal space on either side */
+		    line-height: inherit; /* Helps with vertical alignment */
+		    /* If the "Menu" list item has a specific padding-left, you might need to adjust margin-right here */
+		    margin-right: 0.5em; /* Small gap between language button and Menu */
+		}
+		
+		/* Style for the actual language button (the <a> tag) */
+		#nav ul .language-toggle-button {
+		    display: block; /* Makes the entire padding area clickable */
+		    padding: 0.5em 1em; /* Inner padding of the button */
+		    background-color: rgba(255, 255, 255, 0.1); /* Slightly visible background */
+		    border: solid 1px rgba(255, 255, 255, 0.2); /* Light border */
+		    color: inherit; /* Inherit text color from main nav */
+		    text-decoration: none; /* Remove underline */
+		    border-radius: 4px; /* Rounded corners */
+		    font-size: 0.9em; /* Adjust font size if needed */
+		    font-weight: 400; /* Standard font weight */
+		    white-space: nowrap; /* Prevents text from wrapping */
+		    cursor: pointer; /* Indicates it's clickable */
+		    -moz-transition: background-color 0.2s ease-in-out, border-color 0.2s ease-in-out, color 0.2s ease-in-out;
+		    -webkit-transition: background-color 0.2s ease-in-out, border-color 0.2s ease-in-out, color 0.2s ease-in-out;
+		    -ms-transition: background-color 0.2s ease-in-out, border-color 0.2s ease-in-out, color 0.2s ease-in-out;
+		    transition: background-color 0.2s ease-in-out, border-color 0.2s ease-in-out, color 0.2s ease-in-out;
+		}
+		
+		#nav ul .language-toggle-button:hover {
+		    background-color: rgba(255, 255, 255, 0.2);
+		    border-color: rgba(255, 255, 255, 0.4);
+		    color: #fff; /* White text on hover for contrast */
+		}
+		
+		/* --- Mobile Responsiveness Adjustments (Important for HTML5 UP Twenty) --- */
+		@media screen and (max-width: 980px) {
+		    /* For smaller screens, when the main nav collapses */
+		    #nav ul .language-toggle-wrapper {
+		        display: block; /* Make it take full width in the collapsed menu */
+		        width: 100%;
+		        padding: 0; /* Remove horizontal padding */
+		        margin: 0; /* Remove horizontal margin */
+		        border-top: solid 1px rgba(255, 255, 255, 0.1); /* Add a separator line if desired */
+		    }
+		
+		    #nav ul .language-toggle-button {
+		        border: none; /* Remove border in mobile menu */
+		        border-radius: 0; /* No rounded corners in mobile menu */
+		        background-color: transparent; /* Transparent background */
+		        color: #fff; /* Ensure text is visible */
+		        padding: 0.75em 1em; /* Adjust padding for mobile menu item */
+		        text-align: left; /* Align text to the left like other menu items */
+		    }
+		
+		    #nav ul .language-toggle-button:hover {
+		        background-color: rgba(255, 255, 255, 0.05); /* Slight hover effect */
+		    }
+		
 	}
