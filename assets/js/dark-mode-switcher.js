@@ -23,18 +23,26 @@ document.addEventListener('DOMContentLoaded', () => {
 
     // Function to apply or remove the 'dark-mode' class
     function applyDarkMode(enable) {
+        // Get the actual icon element once
+        // Assuming your icon is structured as: <a ...><span class="icon solid fa-moon"></span><span class="mode-text">...</span></a>
+        const iconElement = darkModeToggle.querySelector('.icon.solid');
+
         if (enable) {
             body.classList.add('dark-mode');
             // Update button text/icon for light mode (next state)
-            darkModeToggle.querySelector('.fa-moon').classList.remove('fa-moon');
-            darkModeToggle.querySelector('.fa-moon').classList.add('fa-sun'); // Change to sun icon
+            if (iconElement) { // Ensure the icon element was found
+                iconElement.classList.remove('fa-moon'); // Remove moon icon class
+                iconElement.classList.add('fa-sun');    // Add sun icon class
+            }
             darkModeToggle.querySelector('.mode-text').textContent = 'Light Mode';
             darkModeToggle.setAttribute('title', 'Switch to Light Mode');
         } else {
             body.classList.remove('dark-mode');
             // Update button text/icon for dark mode (next state)
-            darkModeToggle.querySelector('.fa-sun').classList.remove('fa-sun');
-            darkModeToggle.querySelector('.fa-sun').classList.add('fa-moon'); // Change to moon icon
+            if (iconElement) { // Ensure the icon element was found
+                iconElement.classList.remove('fa-sun');     // Remove sun icon class
+                iconElement.classList.add('fa-moon');       // Add moon icon class
+            }
             darkModeToggle.querySelector('.mode-text').textContent = 'Dark Mode';
             darkModeToggle.setAttribute('title', 'Switch to Dark Mode');
         }
@@ -51,17 +59,22 @@ document.addEventListener('DOMContentLoaded', () => {
     }
 
     // Apply the initial dark mode state
+    // Important: Call applyDarkMode after iconElement is defined
     applyDarkMode(darkModeEnabled);
 
     // --- Event Listener ---
-    darkModeToggle.addEventListener('click', (e) => {
-        e.preventDefault(); // Prevent default link behavior
+    if (darkModeToggle) { // Ensure the toggle button exists before adding listener
+        darkModeToggle.addEventListener('click', (e) => {
+            e.preventDefault(); // Prevent default link behavior
 
-        // Toggle the dark mode state
-        const currentMode = body.classList.contains('dark-mode');
-        const newMode = !currentMode;
+            // Toggle the dark mode state
+            const currentMode = body.classList.contains('dark-mode');
+            const newMode = !currentMode;
 
-        applyDarkMode(newMode);
-        setDarkModePreference(newMode); // Save the new preference
-    });
+            applyDarkMode(newMode);
+            setDarkModePreference(newMode); // Save the new preference
+        });
+    } else {
+        console.warn("Dark mode toggle button with ID 'darkModeToggle' not found.");
+    }
 });
