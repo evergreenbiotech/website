@@ -3402,5 +3402,280 @@ input, select, textarea {
 		    #nav ul .language-toggle-button:hover {
 		        background-color: rgba(255, 255, 255, 0.05); /* Slight hover effect */
 		    }
-		
+
+			/* --- Dark Mode Toggle Button Styling --- */
+
+			#nav ul .dark-mode-toggle-wrapper {
+			    display: inline-block;
+			    vertical-align: middle;
+			    padding: 0 0.5em; /* Slightly less padding than language toggle for snug fit */
+			    line-height: inherit;
+			    margin-right: 0.5em; /* Space between dark mode and language toggle */
+			}
+			
+			#nav ul .dark-mode-button {
+			    display: block;
+			    padding: 0.5em 0.8em; /* Adjusted padding for the icon + text */
+			    background-color: rgba(255, 255, 255, 0.1);
+			    border: solid 1px rgba(255, 255, 255, 0.2);
+			    color: inherit;
+			    text-decoration: none;
+			    border-radius: 4px;
+			    font-size: 0.9em;
+			    font-weight: 400;
+			    white-space: nowrap;
+			    cursor: pointer;
+			    -moz-transition: background-color 0.2s ease-in-out, border-color 0.2s ease-in-out, color 0.2s ease-in-out;
+			    -webkit-transition: background-color 0.2s ease-in-out, border-color 0.2s ease-in-out, color 0.2s ease-in-out;
+			    -ms-transition: background-color 0.2s ease-in-out, border-color 0.2s ease-in-out, color 0.2s ease-in-out;
+			    transition: background-color 0.2s ease-in-out, border-color 0.2s ease-in-out, color 0.2s ease-in-out;
+			}
+			
+			#nav ul .dark-mode-button .icon {
+			    margin-right: 0.5em; /* Space between icon and text */
+			}
+			
+			#nav ul .dark-mode-button:hover {
+			    background-color: rgba(255, 255, 255, 0.2);
+			    border-color: rgba(255, 255, 255, 0.4);
+			    color: #fff;
+			}
+			
+			
+			/* --- DARK MODE STYLES (Apply when body has .dark-mode class) --- */
+			
+			body.dark-mode {
+			    background-color: #1a1a1a; /* Very dark grey background */
+			    color: #e0e0e0; /* Off-white text for readability */
+			}
+			
+			/* Adjust overall typography colors */
+			body.dark-mode p,
+			body.dark-mode li {
+			    color: #c0c0c0; /* Slightly darker text for paragraphs/lists */
+			}
+			
+			body.dark-mode h1,
+			body.dark-mode h2,
+			body.dark-mode h3,
+			body.dark-mode h4,
+			body.dark-mode h5,
+			body.dark-mode h6 {
+			    color: #f0f0f0; /* Lighter headings */
+			}
+			
+			/* Links */
+			body.dark-mode a {
+			    color: #88ccee; /* Lighter blue for links */
+			}
+			
+			body.dark-mode a:hover {
+			    color: #aaddff; /* Even lighter blue on hover */
+			}
+			
+			/* Header */
+			body.dark-mode #header {
+			    background-color: #222222; /* Darker header background */
+			    box-shadow: 0 0.125em 0.25em 0 rgba(0, 0, 0, 0.3); /* Darker shadow */
+			}
+			
+			body.dark-mode #header #logo {
+			    color: #f0f0f0;
+			}
+			body.dark-mode #header #logo span {
+			    color: rgba(240, 240, 240, 0.5); /* Subtitle color */
+			}
+			
+			/* Navigation */
+			body.dark-mode #nav ul li a {
+			    color: #e0e0e0; /* Nav link text */
+			}
+			body.dark-mode #nav ul li a:hover {
+			    color: #fff;
+			}
+			body.dark-mode #nav ul li.submenu > a:before { /* Arrow icon */
+			    color: rgba(224, 224, 224, 0.5);
+			}
+			
+			/* Submenu dropdowns */
+			body.dark-mode #nav ul li.submenu ul {
+			    background: #2a2a2a; /* Darker submenu background */
+			    box-shadow: 0 0.1em 0.2em 0 rgba(0, 0, 0, 0.3);
+			}
+			body.dark-mode #nav ul li.submenu ul:before { /* Arrow for submenu */
+			    border-bottom-color: #2a2a2a;
+			}
+			body.dark-mode #nav ul li.submenu ul li a {
+			    color: #d0d0d0; /* Submenu link color */
+			}
+			body.dark-mode #nav ul li.submenu ul li a:hover {
+			    background: rgba(255, 255, 255, 0.08); /* Hover effect for submenu items */
+			    color: #fff;
+			}
+			
+			
+			/* Banner Section */
+			body.dark-mode #banner {
+			    background-color: #282828; /* Darker banner background */
+			    color: #f0f0f0;
+			    /* If #banner has a background image, you might need to use filter: invert(1) hue-rotate(180deg);
+			       or filter: brightness(0.7) to adjust it. This is highly dependent on the image. */
+			}
+			/* If the banner uses a :before or :after pseudo-element for background pattern */
+			body.dark-mode #banner:before {
+			    background: #282828; /* Adjust background of pseudo-element */
+			    opacity: 0.9; /* Or adjust opacity */
+			}
+			
+			
+			/* Main Article Background */
+			body.dark-mode article#main {
+			    background-color: #222222; /* Darker main content background */
+			}
+			
+			/* Special header sections (like 'About Us', 'Products' headers) */
+			body.dark-mode article#main header.special {
+			    background-color: #2a2a2a; /* Darker background for these headers */
+			    border-bottom-color: rgba(255, 255, 255, 0.1);
+			    color: #f0f0f0;
+			}
+			body.dark-mode article#main header.special span.icon {
+			    color: #88ccee; /* Icon color in special headers */
+			}
+			
+			/* Sections within Main */
+			body.dark-mode section.wrapper {
+			    background-color: #282828; /* General section background */
+			    border-top-color: rgba(255, 255, 255, 0.05); /* Lighter border */
+			}
+			body.dark-mode section.wrapper.style2 { /* Example for specific section styles */
+			    background-color: #303030;
+			}
+			body.dark-mode section.wrapper.style3 {
+			    background-color: #282828;
+			}
+			
+			/* Buttons (e.g., "Find Out More", "Contact Us") */
+			body.dark-mode .button {
+			    background-color: rgba(255, 255, 255, 0.1); /* Lighter background */
+			    color: #e0e0e0 !important; /* Lighter text */
+			    border-color: rgba(255, 255, 255, 0.2);
+			}
+			body.dark-mode .button:hover {
+			    background-color: rgba(255, 255, 255, 0.2);
+			    color: #fff !important;
+			}
+			
+			body.dark-mode .button.primary { /* For primary buttons */
+			    background-color: #88ccee; /* Use a light accent color */
+			    color: #1a1a1a !important; /* Dark text on light button */
+			}
+			body.dark-mode .button.primary:hover {
+			    background-color: #aaddff;
+			}
+			
+			/* Icons (e.g., FontAwesome icons in sections) */
+			body.dark-mode .icon {
+			    color: #e0e0e0; /* Default icon color */
+			}
+			body.dark-mode .featured-icons li .icon {
+			    color: #e0e0e0;
+			    border-color: rgba(255, 255, 255, 0.15);
+			}
+			body.dark-mode .featured-icons li .icon:before {
+			    background-color: rgba(255, 255, 255, 0.05);
+			}
+			
+			
+			/* Images */
+			/* You might want to subtly dim images in dark mode */
+			body.dark-mode img {
+			    filter: brightness(0.95); /* Slightly dim images */
+			    /* Or more aggressive: filter: brightness(0.8) contrast(1.1); */
+			}
+			
+			
+			/* Form elements (Contact page) */
+			body.dark-mode input[type="text"],
+			body.dark-mode input[type="email"],
+			body.dark-mode input[type="password"],
+			body.dark-mode select,
+			body.dark-mode textarea {
+			    background-color: rgba(255, 255, 255, 0.08); /* Darker input fields */
+			    border-color: rgba(255, 255, 255, 0.15);
+			    color: #e0e0e0; /* Lighter text in inputs */
+			}
+			body.dark-mode input[type="text"]:focus,
+			body.dark-mode input[type="email"]:focus,
+			body.dark-mode input[type="password"]:focus,
+			body.dark-mode select:focus,
+			body.dark-mode textarea:focus {
+			    border-color: #88ccee; /* Accent color for focus */
+			}
+			body.dark-mode ::placeholder { /* Placeholder text color */
+			    color: rgba(224, 224, 224, 0.6) !important;
+			}
+			
+			
+			/* Footer */
+			body.dark-mode #footer {
+			    background-color: #1a1a1a; /* Very dark footer */
+			    color: #c0c0c0;
+			    border-top-color: rgba(255, 255, 255, 0.05);
+			}
+			body.dark-mode #footer .icons li a {
+			    color: #e0e0e0;
+			    border-color: rgba(255, 255, 255, 0.2);
+			}
+			body.dark-mode #footer .icons li a:hover {
+			    color: #fff;
+			    background-color: rgba(255, 255, 255, 0.1);
+			}
+			body.dark-mode #footer .copyright {
+			    color: #a0a0a0;
+			}
+			body.dark-mode #footer .copyright a {
+			    color: #88ccee;
+			}
+			body.dark-mode #footer .copyright a:hover {
+			    color: #aaddff;
+			}
+			
+			/* Special case for FontAwesome icon changes */
+			/* The JS will swap fa-moon for fa-sun. We need to ensure their color is correct. */
+			body.dark-mode .dark-mode-button .icon.fa-sun {
+			    /* Styles for the sun icon when in dark mode */
+			    color: #fff; /* White sun icon in dark mode */
+			}
+			body.dark-mode .dark-mode-button .icon.fa-moon {
+			    /* Styles for the moon icon when in light mode */
+			    color: inherit; /* Inherit from parent button */
+			}
+			
+			/* Responsive adjustments for mobile menu - similar to language toggle */
+			@media screen and (max-width: 980px) {
+			    #nav .dark-mode-toggle-wrapper {
+			        display: block;
+			        width: 100%;
+			        padding: 0;
+			        margin: 0;
+			        border-top: solid 1px rgba(255, 255, 255, 0.1);
+			    }
+			
+			    #nav .dark-mode-button {
+			        border: none;
+			        border-radius: 0;
+			        background-color: transparent;
+			        color: #fff;
+			        padding: 0.75em 1em;
+			        text-align: left;
+			    }
+			
+			    #nav .dark-mode-button:hover {
+			        background-color: rgba(255, 255, 255, 0.05);
+			    }
+			}
+
+
+			
 	}
