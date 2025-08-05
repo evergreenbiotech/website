@@ -3506,26 +3506,27 @@ input, select, textarea {
 /* Update this entire section in your main.css file */
 @media screen and (max-width: 980px) {
 
-    /* This targets the main navigation and ensures it's visible in the mobile menu */
     #nav {
         display: block;
     }
 
-    /* This ensures all navigation list items are properly displayed */
     #nav ul li {
+        /*
+         * This rule is the fix. It overrides the generic 'display: none'
+         * from the theme and makes sure our special menu items are displayed.
+         */
         display: block;
         width: 100%;
         padding: 0;
         margin: 0;
     }
 
-    /* --- Styles for Language Toggle in Mobile Menu --- */
+    /* --- Language Toggle Button --- */
     #nav .language-toggle-wrapper {
-        /* Remove desktop-specific margins/padding */
-        padding: 0;
-        margin: 0;
         border-top: solid 1px rgba(255, 255, 255, 0.1);
+        display: block !important;
     }
+
     #nav .language-toggle-button {
         display: block;
         width: 100%;
@@ -3540,12 +3541,10 @@ input, select, textarea {
         background-color: rgba(255, 255, 255, 0.05);
     }
 
-    /* --- Styles for Dark Mode Toggle in Mobile Menu --- */
+    /* --- Dark Mode Toggle Button --- */
     #nav .dark-mode-toggle-wrapper {
-        /* Remove desktop-specific margins/padding */
-        padding: 0;
-        margin: 0;
         border-top: solid 1px rgba(255, 255, 255, 0.1);
+        display: block !important;
     }
     #nav .dark-mode-button {
         display: block;
