@@ -8,6 +8,21 @@ document.addEventListener("DOMContentLoaded", function () {
         })
         .catch(err => console.error("Failed to load header:", err));
 
+    function initDropdownMenuPureCSS() {
+    document.querySelectorAll('#nav li').forEach(item => {
+        const submenu = item.querySelector('ul.dropdown');
+        if (submenu) {
+            item.addEventListener('click', function (e) {
+                // If in mobile view, toggle open class
+                if (window.innerWidth <= 768) {
+                    e.preventDefault();
+                    this.classList.toggle('open');
+                }
+            });
+        }
+    });
+}
+
     function initLanguageToggle() {
         const languageToggleButton = document.getElementById('languageToggleButton');
 
