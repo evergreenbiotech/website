@@ -47,11 +47,11 @@ document.addEventListener("DOMContentLoaded", function () {
                 "Polygonatum": "Polygonatum",
                 "Zhongning Goji Berry": "Zhongning Goji Berry",
                 "Chenpi": "Chenpi",
-                "Contact": "Contact"
+                "Contact": "Contact Us"
             },
             cn: {
                 "Menu": "菜单",
-                "Home": "主页",
+                "Home": "首页",
                 "About Us": "关于我们",
                 "Sources": "货源",
                 "Products": "产品",
@@ -60,7 +60,7 @@ document.addEventListener("DOMContentLoaded", function () {
                 "Polygonatum": "黄精",
                 "Zhongning Goji Berry": "中宁枸杞",
                 "Chenpi": "陈皮",
-                "Contact": "联络"
+                "Contact": "联络我们"
             }
         };
 
