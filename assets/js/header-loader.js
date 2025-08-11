@@ -1,12 +1,13 @@
 document.addEventListener("DOMContentLoaded", function () {
-    // Load header
     fetch("header.html")
         .then(response => response.text())
         .then(data => {
             document.getElementById("header-container").innerHTML = data;
-            initLanguageToggle();
+            initLanguageToggle();         // your language toggle
+            initDropdownMenuPureCSS();    // new pure CSS dropdown initialisation
         })
         .catch(err => console.error("Failed to load header:", err));
+});
 
     function initDropdownMenuPureCSS() {
     document.querySelectorAll('#nav li').forEach(item => {
