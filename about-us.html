@@ -15,15 +15,8 @@
 	<body class="about-us is-preload">
 		<div id="page-wrapper">
 
-<script>
-document.addEventListener("DOMContentLoaded", function() {
-    fetch("header.html")
-        .then(response => response.text())
-        .then(data => {
-            document.getElementById("header-container").innerHTML = data;
-        });
-});
-</script>
+<div id="header-container"></div>
+<script src="assets/js/header-loader.js"></script>
 
 			<!-- Main -->
 				<article id="main">
@@ -105,10 +98,10 @@ document.addEventListener("DOMContentLoaded", function() {
 			<script src="assets/js/breakpoints.min.js"></script>
 			<script src="assets/js/util.js"></script>
 			<script src="assets/js/main.js"></script>
-			<script src="assets/js/language-switcher.js"></script>
-			<script src="assets/js/dark-mode-switcher.js"></script> </body>
+
 
 	</body>
 </html>
+
 
 
