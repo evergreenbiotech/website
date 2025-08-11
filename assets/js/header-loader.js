@@ -4,7 +4,7 @@ document.addEventListener("DOMContentLoaded", function () {
         .then(response => response.text())
         .then(data => {
             document.getElementById("header-container").innerHTML = data;
-            initLanguageToggle(); // Call language toggle setup
+            initLanguageToggle();
         })
         .catch(err => console.error("Failed to load header:", err));
 
@@ -12,21 +12,49 @@ document.addEventListener("DOMContentLoaded", function () {
         const languageToggleButton = document.getElementById('languageToggleButton');
 
         if (!languageToggleButton) {
-            console.warn("Language toggle button not found. Language switching will not work.");
+            console.warn("Language toggle button not found.");
             return;
         }
 
-        // --- Helper Functions ---
-        function getPreferredLanguage() {
-            const currentPathname = window.location.pathname;
-            if (currentPathname.includes('-cn.html')) {
-                return 'cn';
+        // --- Menu Text Mapping ---
+        const menuTranslations = {
+            en: {
+                "Menu": "Menu",
+                "Home": "Home",
+                "About Us": "About Us",
+                "Sources": "Sources",
+                "Products": "Products",
+                "Dendrobium Officinale": "Dendrobium Officinale",
+                "Dendrobium Huoshanense": "Dendrobium Huoshanense",
+                "Polygonatum": "Polygonatum",
+                "Zhongning Goji Berry": "Zhongning Goji Berry",
+                "Chenpi": "Chenpi",
+                "Contact": "Contact"
+            },
+            cn: {
+                "Menu": "菜单",
+                "Home": "主页",
+                "About Us": "关于我们",
+                "Sources": "货源",
+                "Products": "产品",
+                "Dendrobium Officinale": "铁皮石斛",
+                "Dendrobium Huoshanense": "霍山石斛",
+                "Polygonatum": "黄精",
+                "Zhongning Goji Berry": "中宁枸杞",
+                "Chenpi": "陈皮",
+                "Contact": "联络"
             }
-            return localStorage.getItem('preferredLang') || 'en';
-        }
+        };
 
+        // --- Helper Functions ---
         function setPreferredLanguage(lang) {
             localStorage.setItem('preferredLang', lang);
+        }
+
+        function getPreferredLanguage() {
+            const currentPathname = window.location.pathname;
+            if (currentPathname.includes('-cn.html')) return 'cn';
+            return localStorage.getItem('preferredLang') || 'en';
         }
 
         function getLocalizedUrl(originalPathname, targetLang) {
@@ -39,34 +67,42 @@ document.addEventListener("DOMContentLoaded", function () {
             const extension = filenameWithExt.split('.').pop();
 
             if (baseName.endsWith('-cn')) {
-                baseName = baseName.substring(0, baseName.length - 3);
+                baseName = baseName.slice(0, -3);
             }
 
-            let newFilename = baseName;
             if (targetLang === 'cn') {
-                newFilename += '-cn';
+                baseName += '-cn';
             }
 
             const pathSegments = originalPathname.split('/');
-            pathSegments[pathSegments.length - 1] = `${newFilename}.${extension}`;
+            pathSegments[pathSegments.length - 1] = `${baseName}.${extension}`;
             return pathSegments.join('/');
         }
 
-        function applyLanguageToAllLinks(currentLang) {
+        function applyLanguageToAllLinks(lang) {
             document.querySelectorAll('a').forEach(link => {
                 const href = link.getAttribute('href');
                 if (!href || href.startsWith('#') || href.startsWith('mailto:') || href.startsWith('tel:') || href.startsWith('javascript:') || href.startsWith('http')) {
                     return;
                 }
                 if (href.endsWith('.html') || href === '/') {
-                    const localizedHref = getLocalizedUrl(href, currentLang);
+                    const localizedHref = getLocalizedUrl(href, lang);
                     link.setAttribute('href', localizedHref);
                 }
             });
         }
 
-        function updateToggleButtonDisplay(currentLangOnPage) {
-            if (currentLangOnPage === 'en') {
+        function updateMenuText(lang) {
+            document.querySelectorAll('#header a').forEach(link => {
+                const currentText = link.textContent.trim();
+                if (menuTranslations[lang][currentText]) {
+                    link.textContent = menuTranslations[lang][currentText];
+                }
+            });
+        }
+
+        function updateToggleButtonDisplay(lang) {
+            if (lang === 'en') {
                 languageToggleButton.textContent = '中文';
                 languageToggleButton.setAttribute('data-next-lang', 'cn');
                 languageToggleButton.setAttribute('title', 'Switch to Chinese');
@@ -77,38 +113,34 @@ document.addEventListener("DOMContentLoaded", function () {
             }
         }
 
-        // --- Initialise ---
-        const currentPathname = window.location.pathname;
-        const initialPageLang = currentPathname.includes('-cn.html') ? 'cn' : 'en';
+        // --- Init ---
+        const initialLang = getPreferredLanguage();
+        setPreferredLanguage(initialLang);
+        applyLanguageToAllLinks(initialLang);
+        updateMenuText(initialLang);
+        updateToggleButtonDisplay(initialLang);
 
-        setPreferredLanguage(initialPageLang);
-        applyLanguageToAllLinks(initialPageLang);
-        updateToggleButtonDisplay(initialPageLang);
-
-        // --- Click event ---
+        // --- Toggle Event ---
         languageToggleButton.addEventListener('click', (e) => {
             e.preventDefault();
             const nextLang = languageToggleButton.getAttribute('data-next-lang');
             setPreferredLanguage(nextLang);
 
-            // Instantly update all nav links
             applyLanguageToAllLinks(nextLang);
+            updateMenuText(nextLang);
             updateToggleButtonDisplay(nextLang);
 
-            // Try to navigate to translated version of current page
             const targetUrl = getLocalizedUrl(window.location.pathname, nextLang);
-
-            // Quick check if translated file exists
             fetch(targetUrl, { method: 'HEAD' })
                 .then(response => {
                     if (response.ok) {
-                        window.location.href = targetUrl; // Navigate if exists
+                        window.location.href = targetUrl;
                     } else {
-                        console.warn(`No translated page found: ${targetUrl}, staying on current page.`);
+                        console.warn(`No translated page found: ${targetUrl}`);
                     }
                 })
                 .catch(() => {
-                    console.warn(`Error checking page: ${targetUrl}, staying on current page.`);
+                    console.warn(`Error checking page: ${targetUrl}`);
                 });
         });
     }
