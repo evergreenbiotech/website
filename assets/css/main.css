@@ -3341,4 +3341,59 @@ input, select, textarea {
 				height: 34px;
 			}
 
+		/* Dropdown container */
+#nav ul {
+    list-style: none;
+    margin: 0;
+    padding: 0;
+}
+
+#nav ul li {
+    position: relative;
+}
+
+/* Style links */
+#nav ul li a {
+    display: block;
+    padding: 0.5em 1em;
+    text-decoration: none;
+}
+
+/* Hide nested dropdowns by default */
+#nav ul li ul.dropdown {
+    display: none;
+    position: absolute;
+    top: 100%;
+    left: 0;
+    background: #fff; /* Change to dark for dark mode */
+    box-shadow: 0 4px 6px rgba(0,0,0,0.15);
+    min-width: 200px;
+    z-index: 1000;
+}
+
+/* Dropdown links */
+#nav ul li ul.dropdown li a {
+    padding: 0.5em 1em;
+}
+
+/* Hover effect for desktop */
+#nav ul li:hover > ul.dropdown {
+    display: block;
+}
+
+/* Mobile-friendly: show on .open class */
+#nav ul li.open > ul.dropdown {
+    display: block;
+}
+
+/* Optional: arrow indicator */
+#nav ul li > a:after {
+    content: " ▾";
+    font-size: 0.7em;
+}
+#nav ul li ul.dropdown li > a:after {
+    content: "";
+}
+
+		
 	}
