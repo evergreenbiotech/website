@@ -1,14 +1,16 @@
 document.addEventListener("DOMContentLoaded", function () {
 
-    // --------------------
-    // Load Header
-    // --------------------
-    fetch("header.html")
+    // Decide which header file to load
+    const currentPathname = window.location.pathname;
+    const headerFile = currentPathname.includes('-cn.html') ? 'header-cn.html' : 'header.html';
+    
+    // Load the correct header
+    fetch(headerFile)
         .then(response => response.text())
         .then(data => {
             document.getElementById("header-container").innerHTML = data;
             initLanguageToggle();
-            reInitMainMenu(); // Restore desktop + mobile menu behaviour
+            reInitMainMenu(); // Restore desktop + mobile menu
         })
         .catch(err => console.error("Failed to load header:", err));
 
