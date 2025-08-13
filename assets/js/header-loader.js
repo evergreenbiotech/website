@@ -1,11 +1,23 @@
 document.addEventListener("DOMContentLoaded", function () {
 
     // --------------------
-    // Re-init HTML5 UP Menu (Desktop + Mobile)
+    // Load Header
+    // --------------------
+    fetch("header.html")
+        .then(response => response.text())
+        .then(data => {
+            document.getElementById("header-container").innerHTML = data;
+            initLanguageToggle();
+            reInitMainMenu(); // Restore desktop + mobile menu behaviour
+        })
+        .catch(err => console.error("Failed to load header:", err));
+
+    // --------------------
+    // Re-init desktop + mobile menu
     // --------------------
     function reInitMainMenu() {
         if (window.jQuery && $.fn.dropotron) {
-            // Desktop dropdown menu
+            // Desktop dropdowns
             $('#nav > ul').dropotron({
                 offsetY: -15,
                 hoverDelay: 0,
@@ -13,11 +25,7 @@ document.addEventListener("DOMContentLoaded", function () {
                 alignment: 'center'
             });
 
-            // Remove any existing mobile menu before adding a new one
-            $('#titleBar').remove();
-            $('#navPanel').remove();
-
-            // Mobile hamburger menu
+            // Mobile menu toggle (from HTML5 UP's main.js)
             $('<div id="titleBar">' +
                 '<a href="#navPanel" class="toggle"></a>' +
                 '<span class="title">' + $('#logo').html() + '</span>' +
@@ -40,7 +48,7 @@ document.addEventListener("DOMContentLoaded", function () {
     }
 
     // --------------------
-    // Language Toggle Setup
+    // Language Toggle
     // --------------------
     function initLanguageToggle() {
         const languageToggleButton = document.getElementById('languageToggleButton');
@@ -61,7 +69,7 @@ document.addEventListener("DOMContentLoaded", function () {
                 "Polygonatum": "Polygonatum",
                 "Zhongning Goji Berry": "Zhongning Goji Berry",
                 "Chenpi": "Chenpi",
-                "Contact": "Contact Us"
+                "Contact Us": "Contact Us"
             },
             cn: {
                 "Menu": "菜单",
@@ -74,7 +82,7 @@ document.addEventListener("DOMContentLoaded", function () {
                 "Polygonatum": "黄精",
                 "Zhongning Goji Berry": "中宁枸杞",
                 "Chenpi": "陈皮",
-                "Contact": "联络我们"
+                "Contact Us": "联络我们"
             }
         };
 
@@ -168,17 +176,4 @@ document.addEventListener("DOMContentLoaded", function () {
                 });
         });
     }
-
-    // --------------------
-    // Fetch and load the header
-    // --------------------
-    fetch("header.html")
-        .then(response => response.text())
-        .then(data => {
-            document.getElementById("header-container").innerHTML = data;
-            initLanguageToggle();
-            reInitMainMenu(); // Desktop + Mobile menu works again
-        })
-        .catch(err => console.error("Failed to load header:", err));
-
 });
