@@ -1,27 +1,41 @@
 document.addEventListener("DOMContentLoaded", function () {
-    // Load header
-    fetch("header.html")
-        .then(response => response.text())
-        .then(data => {
-            document.getElementById("header-container").innerHTML = data;
-            initLanguageToggle();
-            initDropdownMenu(); // <-- NEW: re-initialise submenu after header load
-        })
-        .catch(err => console.error("Failed to load header:", err));
 
     // --------------------
-    // Dropdown Menu Setup
+    // Re-init HTML5 UP Menu (Desktop + Mobile)
     // --------------------
-    function initDropdownMenu() {
+    function reInitMainMenu() {
         if (window.jQuery && $.fn.dropotron) {
+            // Desktop dropdown menu
             $('#nav > ul').dropotron({
                 offsetY: -15,
                 hoverDelay: 0,
                 hideDelay: 350,
                 alignment: 'center'
             });
+
+            // Remove any existing mobile menu before adding a new one
+            $('#titleBar').remove();
+            $('#navPanel').remove();
+
+            // Mobile hamburger menu
+            $('<div id="titleBar">' +
+                '<a href="#navPanel" class="toggle"></a>' +
+                '<span class="title">' + $('#logo').html() + '</span>' +
+              '</div>').appendTo('body');
+
+            $('<div id="navPanel">' +
+                '<nav>' + $('#nav').html() + '</nav>' +
+              '</div>').appendTo('body')
+              .panel({
+                  delay: 500,
+                  hideOnClick: true,
+                  hideOnSwipe: true,
+                  resetScroll: true,
+                  resetForms: true,
+                  side: 'left'
+              });
         } else {
-            console.warn("Dropotron plugin not found. Dropdown menus will not work.");
+            console.warn("jQuery or Dropotron not loaded; menu will not work.");
         }
     }
 
@@ -154,4 +168,17 @@ document.addEventListener("DOMContentLoaded", function () {
                 });
         });
     }
+
+    // --------------------
+    // Fetch and load the header
+    // --------------------
+    fetch("header.html")
+        .then(response => response.text())
+        .then(data => {
+            document.getElementById("header-container").innerHTML = data;
+            initLanguageToggle();
+            reInitMainMenu(); // Desktop + Mobile menu works again
+        })
+        .catch(err => console.error("Failed to load header:", err));
+
 });
