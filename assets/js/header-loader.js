@@ -1,287 +1,134 @@
 document.addEventListener("DOMContentLoaded", function () {
     const headerContainer = document.getElementById("header-container");
     if (!headerContainer) {
-        console.error("Header container not found! Add <div id='header-container'></div> in your HTML.");
+        console.error("Header container not found!");
         return;
     }
 
-    const currentPathname = window.location.pathname;
-    const headerFile = currentPathname.includes('-cn.html') ? 'header-cn.html' : 'header.html';
+    const isChinesePage = window.location.pathname.includes("-cn.html");
+    const headerFile = isChinesePage ? "header-cn.html" : "header.html";
 
     fetch(headerFile)
-        .then(response => {
-            if (!response.ok) throw new Error(`HTTP error! status: ${response.status}`);
-            return response.text();
-        })
+        .then(res => res.text())
         .then(data => {
             headerContainer.innerHTML = data;
-            setTimeout(() => {
-                initMenu();
-                initLanguageToggle();
-            }, 50);
+
+            // Apply styles
+            addHeaderStyles();
+
+            // Init Dropotron (desktop dropdown animation)
+            if (window.jQuery && $.fn.dropotron) {
+                $('#nav > ul').dropotron({
+                    offsetY: -15,
+                    hoverDelay: 0,
+                    hideDelay: 350,
+                    alignment: 'center'
+                });
+            }
+
+            // Init mobile hamburger
+            initMobileMenu();
+
+            // Init language toggle
+            initLanguageToggle();
+
+            // Highlight active page
+            highlightActivePage();
+
+            // Fixed header smooth scroll
+            initSmoothScrollHeader();
         })
-        .catch(err => {
-            console.error("Failed to load header:", err);
-            headerContainer.innerHTML = `<div style="background:#ffebee; border:1px solid #f44336; padding:15px; color:#c62828;">Failed to load header: ${err.message}</div>`;
-        });
+        .catch(err => console.error("Failed to load header:", err));
 
-    // --------------------
-    // Menu Initialisation
-    // --------------------
-    function initMenu() {
-        addMenuStyles();
-        createMobileButton();
-        initDropdowns();
-        window.addEventListener('resize', handleResize);
-    }
-
-    function addMenuStyles() {
-        const existingStyle = document.getElementById('menu-styles');
-        if (existingStyle) existingStyle.remove();
-
-        const style = document.createElement('style');
-        style.id = 'menu-styles';
+    function addHeaderStyles() {
+        const style = document.createElement("style");
         style.textContent = `
-            /* Floating Header */
-            #header.fixed-header {
-                position: sticky;
+            #header {
+                position: fixed;
                 top: 0;
-                z-index: 999;
-                background: #fff;
-                box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+                left: 0;
+                width: 100%;
+                z-index: 9999;
+                background: white;
+                transition: top 0.3s ease-in-out;
             }
-
-            #logo a {
-                text-decoration: none;
-                color: #333;
-                font-size: 1.5rem;
-                font-weight: bold;
-            }
-            #logo span {
-                font-size: 0.8rem;
-                color: #666;
-                display: block;
-            }
-
-            /* Main Nav */
-            #nav ul {
-                list-style: none;
-                margin: 0;
-                padding: 0;
-                display: flex;
-                align-items: center;
-            }
-            #nav > ul > li {
-                position: relative;
-            }
-            #nav > ul > li > a {
-                display: block;
-                padding: 0.75rem 1rem;
-                text-decoration: none;
-                color: #333;
-                transition: all 0.3s;
-            }
-            #nav > ul > li > a:hover {
-                background-color: #f5f5f5;
-            }
-
-            /* Bold main menu items */
-            #nav > ul > li > a strong {
-                font-weight: bold;
-            }
-
-            /* Language Toggle */
-            .language-toggle-wrapper {
-                margin-right: 1rem;
-            }
-            .lang-btn {
+            #nav ul { list-style: none; margin: 0; padding: 0; display: flex; }
+            #nav > ul > li > a { padding: 0.75rem 1rem; text-decoration: none; font-weight: bold; }
+            .language-toggle-button {
+                border: 2px solid #007bff;
+                border-radius: 4px;
+                padding: 0.5rem 0.75rem;
+                background: #e6f0ff;
                 display: flex;
                 align-items: center;
                 gap: 6px;
-                padding: 0.4rem 0.8rem;
-                border: 2px solid #007bff;
-                border-radius: 4px;
-                background: white;
-                font-weight: bold;
-                color: #007bff;
-                transition: all 0.3s ease;
             }
-            .lang-btn:hover {
-                background: #007bff;
-                color: white;
-            }
-            .flag {
-                font-size: 1.1rem;
-            }
-
-            /* Dropdown */
-            .dropdown {
-                display: none;
-                position: absolute;
-                top: 100%;
-                left: 0;
-                background: #fff;
-                border: 1px solid #ddd;
-                border-radius: 4px;
-                box-shadow: 0 4px 10px rgba(0,0,0,0.1);
-                min-width: 200px;
-                z-index: 1000;
-            }
-            .dropdown li {
-                width: 100%;
-            }
-            .dropdown a {
-                display: block;
-                padding: 0.75rem 1rem;
-                text-decoration: none;
-                color: #333;
-                border-bottom: 1px solid #f0f0f0;
-            }
-            .dropdown a:hover {
-                background-color: #f8f9fa;
-            }
-            .dropdown li:last-child a {
-                border-bottom: none;
-            }
-
-            @media (min-width: 769px) {
-                .has-dropdown:hover .dropdown {
-                    display: block;
-                }
-            }
-
-            /* Mobile */
-            .mobile-menu-btn {
-                display: none;
-                background: #333;
-                color: white;
-                border: none;
-                padding: 0.75rem;
-                cursor: pointer;
-                border-radius: 4px;
-                font-size: 1rem;
-                z-index: 1001;
-            }
+            .flag-icon { width: 20px; height: auto; }
+            #nav .active a { background: #007bff; color: white; border-radius: 4px; }
             @media (max-width: 768px) {
-                #header {
-                    flex-direction: column;
-                    align-items: flex-start;
-                    padding: 1rem;
-                }
-                #logo {
-                    width: 100%;
-                    margin-bottom: 1rem;
-                }
-                .mobile-menu-btn {
-                    display: block;
-                    position: absolute;
-                    top: 1rem;
-                    right: 1rem;
-                }
-                #nav {
-                    width: 100%;
-                    display: none;
-                }
-                #nav.mobile-open {
-                    display: block;
-                }
-                #nav ul {
-                    flex-direction: column;
-                    width: 100%;
-                }
-                #nav li {
-                    width: 100%;
-                    border-bottom: 1px solid #eee;
-                }
-                #nav > ul > li > a {
-                    padding: 1rem;
-                    display: block;
-                }
-                .dropdown {
-                    position: static;
-                    display: none;
-                    box-shadow: none;
-                    border: none;
-                    background: #f8f9fa;
-                }
-                .has-dropdown.mobile-open .dropdown {
-                    display: block;
-                }
-                .dropdown a {
-                    padding-left: 2rem;
-                }
+                #nav { display: none; flex-direction: column; background: white; width: 100%; }
+                #nav.open { display: flex; }
+                #nav ul { flex-direction: column; }
+                #nav li { border-bottom: 1px solid #ddd; }
+                .submenu > ul { display: none; }
+                .submenu.open > ul { display: block; }
             }
         `;
         document.head.appendChild(style);
     }
 
-    function createMobileButton() {
-        const existingBtn = document.getElementById('mobile-menu-btn');
-        if (existingBtn) existingBtn.remove();
+    function initMobileMenu() {
+        const menuBtn = document.createElement("button");
+        menuBtn.textContent = "☰ Menu";
+        menuBtn.style.cssText = "position:absolute; right:1rem; top:1rem; background:#007bff; color:white; border:none; padding:0.5rem 1rem; border-radius:4px;";
+        document.getElementById("header").appendChild(menuBtn);
 
-        const button = document.createElement('button');
-        button.id = 'mobile-menu-btn';
-        button.className = 'mobile-menu-btn';
-        button.innerHTML = '☰ Menu';
-        button.setAttribute('aria-label', 'Toggle Menu');
+        menuBtn.addEventListener("click", () => {
+            document.getElementById("nav").classList.toggle("open");
+        });
 
-        const header = document.getElementById('header');
-        if (header) {
-            header.appendChild(button);
-            button.addEventListener('click', function () {
-                const nav = document.getElementById('nav');
-                nav.classList.toggle('mobile-open');
-                button.innerHTML = nav.classList.contains('mobile-open') ? '✕ Close' : '☰ Menu';
-            });
-        }
-    }
-
-    function initDropdowns() {
-        document.querySelectorAll('.has-dropdown').forEach(item => {
-            const link = item.querySelector('a');
-            link.addEventListener('click', function (e) {
+        document.querySelectorAll(".submenu > a").forEach(link => {
+            link.addEventListener("click", e => {
                 if (window.innerWidth <= 768) {
                     e.preventDefault();
-                    item.classList.toggle('mobile-open');
+                    link.parentElement.classList.toggle("open");
                 }
             });
         });
     }
 
-    function handleResize() {
-        if (window.innerWidth > 768) {
-            const nav = document.getElementById('nav');
-            const button = document.getElementById('mobile-menu-btn');
-            if (nav) nav.classList.remove('mobile-open');
-            if (button) button.innerHTML = '☰ Menu';
-            document.querySelectorAll('.has-dropdown.mobile-open').forEach(item => {
-                item.classList.remove('mobile-open');
-            });
-        }
+    function initLanguageToggle() {
+        const btn = document.getElementById("languageToggleButton");
+        if (!btn) return;
+
+        btn.addEventListener("click", e => {
+            e.preventDefault();
+            const newUrl = isChinesePage
+                ? window.location.pathname.replace("-cn.html", ".html")
+                : window.location.pathname.replace(".html", "-cn.html");
+            window.location.href = newUrl;
+        });
     }
 
-    // --------------------
-    // Language Toggle
-    // --------------------
-    function initLanguageToggle() {
-        const toggleButtons = document.querySelectorAll('#languageToggleButton');
-        toggleButtons.forEach(button => {
-            const isChinesePage = currentPathname.includes('-cn.html');
-            if (isChinesePage) {
-                button.innerHTML = '<span class="flag">🇬🇧</span> English';
-                button.classList.add('lang-btn');
-                button.addEventListener('click', function (e) {
-                    e.preventDefault();
-                    window.location.href = currentPathname.replace('-cn.html', '.html');
-                });
-            } else {
-                button.innerHTML = '<span class="flag">🇨🇳</span> 中文';
-                button.classList.add('lang-btn');
-                button.addEventListener('click', function (e) {
-                    e.preventDefault();
-                    window.location.href = currentPathname.replace('.html', '-cn.html');
-                });
+    function highlightActivePage() {
+        const currentPath = window.location.pathname.split("/").pop();
+        document.querySelectorAll("#nav a").forEach(link => {
+            if (link.getAttribute("href") === currentPath) {
+                link.parentElement.classList.add("active");
             }
+        });
+    }
+
+    function initSmoothScrollHeader() {
+        let prevScroll = window.pageYOffset;
+        window.addEventListener("scroll", () => {
+            const currScroll = window.pageYOffset;
+            if (prevScroll > currScroll) {
+                document.getElementById("header").style.top = "0";
+            } else {
+                document.getElementById("header").style.top = "-80px";
+            }
+            prevScroll = currScroll;
         });
     }
 });
