@@ -17,12 +17,12 @@ document.addEventListener("DOMContentLoaded", function () {
     .then((html) => {
       headerContainer.innerHTML = html;
 
-      buildMobilePanel();      // build theme-native #navPanel + #navButton
-      initDropotronDesktop();  // Products dropdown (fade)
+      buildMobilePanel();      // theme-native #navPanel + #navButton
+      initDropotronDesktop();  // desktop dropdown fade
       initLanguageToggle();    // desktop + mobile
-      highlightActiveTab();    // underline active page
+      highlightActiveTab();    // active page underline
       setupStickyHeader();     // smooth hide/show
-      injectStyles();          // widths, typography, colors
+      injectStyles();          // widths, colors, icons, typography
     })
     .catch((err) => console.error("Failed to load header:", err));
 
@@ -43,40 +43,61 @@ document.addEventListener("DOMContentLoaded", function () {
   }
 
   // --------------------------------------------------
-  // Mobile: build navPanel using HTML5 UP's navList()
-  // (Use #navButton per your theme CSS, NOT #titleBar)
+  // Mobile: build navPanel (robust: with or without navList)
+  // Uses theme's #navButton per your CSS
   // --------------------------------------------------
   function buildMobilePanel() {
-    if (!(window.jQuery && $.fn.panel && $.fn.navList)) {
-      console.warn("HTML5 UP panel/navList not available; mobile menu may not work.");
+    const hasPanel = window.jQuery && $.fn.panel;
+    const hasNavList = window.jQuery && $.fn.navList;
+
+    if (!hasPanel) {
+      console.warn("HTML5 UP panel() not available; mobile menu may not work.");
       return;
     }
 
-    // Clean up previous instances
+    // Clean up previous instances to avoid duplicates
     $("#navPanel, #navButton").remove();
 
-    // Build slide-out panel with generated list
-    const navListHtml = $("#nav").navList(); // returns flat list markup
+    // Create panel container
     $('<div id="navPanel"><nav class="panel-nav"></nav></div>').appendTo("body");
     const $panelNav = $("#navPanel .panel-nav");
 
-    // Language toggle slot at the very top
+    // Language slot at the very top (we inject the button later)
     $panelNav.append('<div id="mobileLangWrap" class="mobile-lang-wrap"></div>');
 
-    // Insert the generated list (clean <a> links)
-    $panelNav.append(navListHtml);
+    // Build menu content
+    try {
+      if (hasNavList) {
+        // Preferred: flat list with .link/.depth classes
+        const navListHtml = $("#nav").navList();
+        $panelNav.append(navListHtml);
+      } else {
+        // Fallback: clone the desktop nav list and keep anchors
+        const $clone = $("#nav > ul").clone(true, true);
+        // Remove the desktop language item if present
+        $clone.find("#languageToggleButton").closest("li").remove();
+        $panelNav.append($clone);
+      }
+    } catch (e) {
+      console.warn("navList()/clone failed, fallback to minimal links:", e);
+      // Absolute fallback: scrape links
+      const links = Array.from(document.querySelectorAll("#nav a[href]"))
+        .map((a) => `<a class="link depth-0" href="${a.getAttribute("href")}">${a.textContent.trim()}</a>`)
+        .join("");
+      $panelNav.append(links);
+    }
 
-    // Remove any desktop language entry navList() might have copied
+    // If a desktop language item slipped through, remove it in the panel
     $panelNav.find("a#languageToggleButton").parent("li, div").remove();
 
-    // Build the theme-native hamburger
+    // Theme-native hamburger
     $(
       '<div id="navButton">' +
         '<a href="#navPanel" class="toggle"></a>' +
       "</div>"
     ).appendTo("body");
 
-    // Activate panel
+    // Activate slide panel
     $("#navPanel").panel({
       delay: 500,
       hideOnClick: true,
@@ -86,9 +107,8 @@ document.addEventListener("DOMContentLoaded", function () {
       side: "left",
     });
 
-    // Close panel when any link is clicked (belt & suspenders)
-    $(document).on("click", "#navPanel .link", function () {
-      // util.panel adds/removes this class on body
+    // Close panel when a link is clicked (works for .link or plain <a>)
+    $(document).on("click", "#navPanel .link, #navPanel a[href]", function () {
       document.body.classList.remove("navPanel-visible");
     });
   }
@@ -115,7 +135,7 @@ document.addEventListener("DOMContentLoaded", function () {
       desktopBtn.addEventListener("click", go);
     }
 
-    // Mobile at very top of panel
+    // Mobile (insert at very top of panel)
     const mobileWrap = document.getElementById("mobileLangWrap");
     if (mobileWrap) {
       const mobileBtn = document.createElement("a");
@@ -161,8 +181,8 @@ document.addEventListener("DOMContentLoaded", function () {
   // Styles (scoped, override theme safely)
   // --------------------------------------
   function injectStyles() {
-    // Panel width used everywhere (keep numbers consistent)
-    const PANEL_WIDTH = 360; // px (adjust here if you want it wider/narrower)
+    // Keep transform distances in sync with width
+    const PANEL_WIDTH = 360; // px
 
     const prev = document.getElementById("header-dynamic-styles");
     if (prev) prev.remove();
@@ -170,10 +190,10 @@ document.addEventListener("DOMContentLoaded", function () {
     const s = document.createElement("style");
     s.id = "header-dynamic-styles";
     s.textContent = `
-      /* Prevent content hiding behind fixed header when it reappears */
+      /* Prevent content hiding behind fixed header */
       html { scroll-padding-top: 80px; }
 
-      /* Desktop readability: bolder, darker */
+      /* Desktop nav: bolder, darker */
       #nav > ul > li > a { font-weight: 700; color: #1f2937; }
       #nav > ul > li > a:hover { color: #111827; }
       #nav a.active-tab { border-bottom: 3px solid #007bff; }
@@ -197,8 +217,7 @@ document.addEventListener("DOMContentLoaded", function () {
         to   { opacity: 1; transform: translateY(0); }
       }
 
-      /* --- MOBILE: use theme's #navButton + #navPanel --- */
-      /* Override default 275px to our PANEL_WIDTH consistently */
+      /* --- MOBILE PANEL: width + matching transforms + dark bg --- */
       @media screen and (max-width: 840px) {
         #navPanel {
           width: ${PANEL_WIDTH}px !important;
@@ -207,12 +226,10 @@ document.addEventListener("DOMContentLoaded", function () {
           -ms-transform: translateX(-${PANEL_WIDTH}px) !important;
           transform: translateX(-${PANEL_WIDTH}px) !important;
 
-          /* better readability */
-          background: #1c2021;
-          color: #fff;
+          background: #1c2021 !important;  /* force dark background */
+          color: #fff !important;
           font-size: 1rem;
         }
-
         body.navPanel-visible #page-wrapper {
           -moz-transform: translateX(${PANEL_WIDTH}px) !important;
           -webkit-transform: translateX(${PANEL_WIDTH}px) !important;
@@ -226,16 +243,16 @@ document.addEventListener("DOMContentLoaded", function () {
           transform: translateX(${PANEL_WIDTH}px) !important;
         }
 
-        /* Hide long site title text (we only want hamburger) */
+        /* Use hamburger only; hide long title text */
         #navButton .title { display: none; }
 
-        /* Panel list typography + wrapping long labels */
+        /* Panel links (covers navList() .link and plain <a>) */
         #navPanel nav ul { list-style: none; margin: 0; padding: 0; }
-        #navPanel nav a {
+        #navPanel nav a, #navPanel nav .link {
           display: block;
           padding: 0.95rem 1rem;
           border-bottom: 1px solid rgba(255,255,255,0.08);
-          color: #fff;
+          color: #fff !important;
           text-decoration: none;
           font-weight: 600;
           font-size: 1.15rem;
@@ -245,9 +262,11 @@ document.addEventListener("DOMContentLoaded", function () {
           word-break: break-word;
           hyphens: auto;
         }
-        #navPanel nav a:hover { background: rgba(255,255,255,0.06); }
+        #navPanel nav a:hover, #navPanel nav .link:hover {
+          background: rgba(255,255,255,0.06);
+        }
 
-        /* Mobile language toggle at the top with spacing */
+        /* Mobile language toggle at top */
         .mobile-lang-wrap {
           padding: 10px;
           border-bottom: 1px solid rgba(255,255,255,0.08);
@@ -263,6 +282,18 @@ document.addEventListener("DOMContentLoaded", function () {
           font-weight: 800;
           font-size: 1.05rem;
         }
+      }
+
+      /* --- Footer: YouTube red + size parity with Facebook --- */
+      #footer .icons .icon.circle {
+        width: 2.5em !important;
+        height: 2.5em !important;
+        line-height: 2.5em !important;
+        font-size: 1.25em !important;
+      }
+      .icon.circle.fa-youtube {
+        background: #FF0000 !important;
+        color: #fff !important;
       }
     `;
     document.head.appendChild(s);
