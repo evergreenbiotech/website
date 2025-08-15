@@ -27,7 +27,8 @@ document.addEventListener("DOMContentLoaded", function () {
       initLanguageToggle();     // desktop + mobile
       highlightActiveTab();     // underline current page
       setupStickyHeader();      // smooth hide/show header
-      injectStyles();           // all CSS tweaks (mobile, CJK, icons, etc.)
+      markSourceLines();        // mark “来源 / Source” lines for left-align only
+      injectStyles();           // all CSS tweaks (mobile, CJK, icons, desktop colors)
     })
     .catch(err => console.error("Header load failed:", err));
 
@@ -164,6 +165,30 @@ document.addEventListener("DOMContentLoaded", function () {
     });
   }
 
+  // ------------------ Mark “来源 / Source” lines ------------------
+  function markSourceLines() {
+    const main = document.getElementById("main");
+    if (!main) return;
+
+    const isSourceLike = (txt) => {
+      if (!txt) return false;
+      const t = txt.trim();
+      return (
+        t.startsWith("来源") ||     // 简体
+        t.startsWith("來源") ||     // 繁体
+        t.startsWith("Source")      // English
+      );
+    };
+
+    const candidates = main.querySelectorAll("p, li");
+    candidates.forEach(el => {
+      const txt = el.textContent || "";
+      if (isSourceLike(txt)) {
+        el.classList.add("source-line");
+      }
+    });
+  }
+
   // ------------------ Sticky header ------------------
   function setupStickyHeader() {
     const header = document.getElementById("header");
@@ -191,6 +216,11 @@ document.addEventListener("DOMContentLoaded", function () {
       html { scroll-padding-top: 80px; }
 
       /* Desktop readability + active tab */
+      @media (min-width: 841px) {
+        #main p  { color: #1f2937; }   /* slate-800 */
+        #main h2 { color: #111827; }   /* slate-900 */
+        #main h3 { color: #111827; }
+      }
       #nav > ul > li > a { font-weight: 700; color: #1f2937; }
       #nav > ul > li > a:hover { color: #111827; }
       #nav a.active-tab { border-bottom: 3px solid #007bff; }
@@ -288,18 +318,11 @@ document.addEventListener("DOMContentLoaded", function () {
         text-decoration: none !important;
       }
 
-      /* --- Content wrapping + CJK fixes on mobile --- */
+      /* --- Mobile content: keep justification (theme default), only left-align source lines --- */
       @media (max-width: 840px) {
-        /* Avoid inter-character spacing & justification on zh pages */
-        html[lang="zh-CN"] #main { letter-spacing: normal !important; }
-        html[lang="zh-CN"] #main p,
-        html[lang="zh-CN"] #main a,
-        html[lang="zh-CN"] #main li,
-        html[lang="zh-CN"] #main h1,
-        html[lang="zh-CN"] #main h2,
-        html[lang="zh-CN"] #main h3 {
+        #main .source-line {
           letter-spacing: normal !important;
-          text-align: left !important;   /* prevents "来源" from being justified */
+          text-align: left !important;
         }
 
         /* Safer wrapping for long words/URLs */
