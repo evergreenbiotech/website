@@ -403,5 +403,100 @@
     }
   })();
 </script>
+
+
+<script>
+  (function overrideHeaderLanguageToggleForLegal() {
+    function bind() {
+      const btn = document.getElementById('languageToggleButton');
+      if (!btn) return false;
+
+      // Make it behave like a tab switch, not a link
+      btn.setAttribute('role', 'button');
+      btn.setAttribute('href', '#'); // harmless anchor
+      btn.addEventListener('click', function(e) {
+        e.preventDefault();
+        e.stopImmediatePropagation(); // stop header's default handler, if any
+
+        // Determine current panel and flip it
+        const enActive = document.getElementById('panel-en')?.classList.contains('active');
+        const next = enActive ? 'cn' : 'en';
+
+        if (typeof window.setLegalLang === 'function') {
+          window.setLegalLang(next, true);
+        } else {
+          // Fallback: just change the hash; our tab script will react on load
+          location.hash = '#' + next;
+        }
+      }, { capture: true }); // capture helps ensure we intercept first
+
+      return true;
+    }
+
+    // header loads asynchronously — retry a few times
+    let tries = 0;
+    const maxTries = 20;
+    const timer = setInterval(() => {
+      if (bind() || ++tries >= maxTries) clearInterval(timer);
+    }, 150);
+
+    // Also try once after DOM ready
+    if (document.readyState === 'complete' || document.readyState === 'interactive') {
+      setTimeout(bind, 100);
+    } else {
+      document.addEventListener('DOMContentLoaded', bind);
+    }
+  })();
+</script>
+
+
+  <script>
+  (function overrideHeaderLanguageToggleForLegal() {
+    function bind() {
+      const btn = document.getElementById('languageToggleButton');
+      if (!btn) return false;
+
+      // Make it behave like a tab switch, not a link
+      btn.setAttribute('role', 'button');
+      btn.setAttribute('href', '#'); // harmless anchor
+      btn.addEventListener('click', function(e) {
+        e.preventDefault();
+        e.stopImmediatePropagation(); // stop header's default handler, if any
+
+        // Determine current panel and flip it
+        const enActive = document.getElementById('panel-en')?.classList.contains('active');
+        const next = enActive ? 'cn' : 'en';
+
+        if (typeof window.setLegalLang === 'function') {
+          window.setLegalLang(next, true);
+        } else {
+          // Fallback: just change the hash; our tab script will react on load
+          location.hash = '#' + next;
+        }
+      }, { capture: true }); // capture helps ensure we intercept first
+
+      return true;
+    }
+
+    // header loads asynchronously — retry a few times
+    let tries = 0;
+    const maxTries = 20;
+    const timer = setInterval(() => {
+      if (bind() || ++tries >= maxTries) clearInterval(timer);
+    }, 150);
+
+    // Also try once after DOM ready
+    if (document.readyState === 'complete' || document.readyState === 'interactive') {
+      setTimeout(bind, 100);
+    } else {
+      document.addEventListener('DOMContentLoaded', bind);
+    }
+  })();
+</script>
+
+  
+		<body class="legal is-preload" data-bilingual="true">
+
+  
 </body>
 </html>
