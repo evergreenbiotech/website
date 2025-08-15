@@ -384,6 +384,9 @@
       }
     }
 
+    // 👇 ADD THIS LINE so other scripts (like our override) can call it
+    window.setLegalLang = setLang;
+
     enBtn.addEventListener('click', () => setLang('en'));
     cnBtn.addEventListener('click', () => setLang('cn'));
 
