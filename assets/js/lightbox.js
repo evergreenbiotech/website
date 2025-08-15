@@ -1,8 +1,4 @@
 document.addEventListener("DOMContentLoaded", () => {
-  // Select all images under #main unless explicitly opted-out
-  const imgs = Array.from(document.querySelectorAll('#main img:not([data-no-lightbox])'));
-  if (!imgs.length) return;
-
   // Build overlay once
   const overlay = document.createElement('div');
   overlay.id = 'lb-overlay';
@@ -19,12 +15,12 @@ document.addEventListener("DOMContentLoaded", () => {
   `;
   document.body.appendChild(overlay);
 
-  // Styles (kept self-contained so you don't have to touch main.css)
+  // Styles (self-contained)
   const s = document.createElement('style');
   s.textContent = `
     #main img { cursor: zoom-in; }
 
-    #lb-overlay { position: fixed; inset: 0; display: none; z-index: 100000; }
+    #lb-overlay { position: fixed; inset: 0; display: none; z-index: 2147483647; }
     #lb-overlay.open { display: block; }
 
     #lb-backdrop { position: absolute; inset: 0; background: rgba(0,0,0,.82); }
@@ -33,27 +29,21 @@ document.addEventListener("DOMContentLoaded", () => {
       position: absolute; inset: 0;
       display: grid; grid-template-rows: 1fr auto;
       align-items: center; justify-items: center;
-      padding: 18px 20px 24px 20px;
-      gap: 10px;
+      padding: 18px 20px 24px 20px; gap: 10px;
     }
 
     #lb-stage {
-      position: relative;
-      width: 100%; height: 100%;
-      display: grid; place-items: center;
-      overflow: hidden; /* required for panning */
-      touch-action: none; /* enable pinch/drag without browser interference */
-      background: transparent;
+      position: relative; width: 100%; height: 100%;
+      display: grid; place-items: center; overflow: hidden;
+      touch-action: none; background: transparent;
     }
 
     #lb-img {
       max-width: 90vw; max-height: 80vh;
       border-radius: 8px; background:#fff;
       box-shadow: 0 10px 30px rgba(0,0,0,.5);
-      transform-origin: center center;
-      transition: transform 120ms ease; /* snappy zoom */
-      will-change: transform;
-      user-select: none; -webkit-user-drag: none; pointer-events: none; /* we capture on stage */
+      transform-origin: center center; transition: transform 120ms ease;
+      will-change: transform; user-select: none; -webkit-user-drag: none; pointer-events: none;
     }
 
     #lb-spinner {
@@ -63,13 +53,11 @@ document.addEventListener("DOMContentLoaded", () => {
       display: none;
     }
     #lb-stage.loading #lb-spinner { display: block; }
-
     @keyframes lb-spin { to { transform: rotate(360deg); } }
 
     #lb-cap {
       color:#fff; font-size: .95rem; text-align:center;
-      max-width: 90vw; word-break: break-word; line-height: 1.4;
-      opacity: .95;
+      max-width: 90vw; word-break: break-word; line-height: 1.4; opacity: .95;
     }
 
     #lb-close {
@@ -79,7 +67,6 @@ document.addEventListener("DOMContentLoaded", () => {
     }
     #lb-close:hover { background: rgba(255,255,255,.12); }
 
-    /* Cursor changes while draggable */
     #lb-stage.grabbable { cursor: grab; }
     #lb-stage.grabbing  { cursor: grabbing; }
 
@@ -90,7 +77,11 @@ document.addEventListener("DOMContentLoaded", () => {
   `;
   document.head.appendChild(s);
 
-  // Util: preload an image and resolve when loaded
+  const lbImg = overlay.querySelector('#lb-img');
+  const lbCap = overlay.querySelector('#lb-cap');
+  const stage = overlay.querySelector('#lb-stage');
+
+  // ---------- Utilities ----------
   function preload(src) {
     return new Promise((resolve, reject) => {
       const im = new Image();
@@ -100,47 +91,36 @@ document.addEventListener("DOMContentLoaded", () => {
     });
   }
 
-  const lbImg = overlay.querySelector('#lb-img');
-  const lbCap = overlay.querySelector('#lb-cap');
-  const stage = overlay.querySelector('#lb-stage');
-
-  // Zoom/pan state
-  let zoom = 1, minZoom = 1, maxZoom = 4;
-  let panX = 0, panY = 0;
-  let isPointerDown = false;
-  let lastX = 0, lastY = 0;
-  let lastTouchDist = 0;
+  // ---------- Open / Close ----------
+  let zoom = 1, panX = 0, panY = 0;
+  const minZoom = 1, maxZoom = 4;
 
   function applyTransform() {
     lbImg.style.transform = `translate(${panX}px, ${panY}px) scale(${zoom})`;
     stage.classList.toggle('grabbable', zoom > 1);
   }
-
   function clampPan() {
-    // Limit panning so that image doesn't fly away; allow some overscroll
     const rect = lbImg.getBoundingClientRect();
     const stg = stage.getBoundingClientRect();
-    const excessX = Math.max(0, (rect.width - stg.width) / 2);
-    const excessY = Math.max(0, (rect.height - stg.height) / 2);
-    panX = Math.min(excessX, Math.max(-excessX, panX));
-    panY = Math.min(excessY, Math.max(-excessY, panY));
+    const exX = Math.max(0, (rect.width - stg.width) / 2);
+    const exY = Math.max(0, (rect.height - stg.height) / 2);
+    panX = Math.min(exX, Math.max(-exX, panX));
+    panY = Math.min(exY, Math.max(-exY, panY));
   }
 
   function openLightbox(src, caption) {
-    // Reset view
+    // Reset
     zoom = 1; panX = 0; panY = 0; applyTransform();
     lbImg.src = ''; lbCap.textContent = '';
     stage.classList.add('loading');
-
     overlay.classList.add('open');
     document.body.style.overflow = 'hidden';
 
-    // Load image, then show
+    // Preload then show
     preload(src).then(() => {
       lbImg.src = src;
       lbCap.textContent = caption || '';
       stage.classList.remove('loading');
-      // Ensure transform reset after dimensions known
       zoom = 1; panX = 0; panY = 0; applyTransform();
     }).catch(() => {
       stage.classList.remove('loading');
@@ -155,7 +135,6 @@ document.addEventListener("DOMContentLoaded", () => {
     lbCap.textContent = '';
   }
 
-  // Overlay close interactions
   overlay.addEventListener('click', (e) => {
     if (e.target.id === 'lb-backdrop' || e.target.id === 'lb-close') closeLightbox();
   });
@@ -163,53 +142,38 @@ document.addEventListener("DOMContentLoaded", () => {
     if (overlay.classList.contains('open') && (e.key === 'Escape' || e.key === 'Esc')) closeLightbox();
   });
 
-  // Stage interactions (click to toggle zoom; drag to pan; wheel zoom; pinch zoom)
+  // ---------- Zoom & Pan ----------
+  let isPointerDown = false, lastX = 0, lastY = 0, clickMoved = false, lastTouchDist = 0;
+
   stage.addEventListener('mousedown', (e) => {
-    if (e.button !== 0) return;
-    if (!overlay.classList.contains('open')) return;
-    isPointerDown = true;
+    if (e.button !== 0 || !overlay.classList.contains('open')) return;
+    isPointerDown = true; clickMoved = false;
     stage.classList.add('grabbing');
-    lastX = e.clientX;
-    lastY = e.clientY;
+    lastX = e.clientX; lastY = e.clientY;
   });
   window.addEventListener('mouseup', () => {
-    isPointerDown = false;
-    stage.classList.remove('grabbing');
+    isPointerDown = false; stage.classList.remove('grabbing');
   });
   window.addEventListener('mousemove', (e) => {
     if (!isPointerDown || zoom <= 1) return;
-    panX += (e.clientX - lastX);
-    panY += (e.clientY - lastY);
+    clickMoved = true;
+    panX += (e.clientX - lastX); panY += (e.clientY - lastY);
     lastX = e.clientX; lastY = e.clientY;
     clampPan(); applyTransform();
   });
 
-  // Click to toggle zoom (don’t fire if we were dragging)
-  let clickMoved = false;
-  stage.addEventListener('pointerdown', (e) => {
-    clickMoved = false;
-  }, {passive:true});
-  stage.addEventListener('pointermove', (e) => {
-    clickMoved = true;
-  }, {passive:true});
+  // Toggle zoom on click (unless we dragged)
   stage.addEventListener('click', (e) => {
-    if (clickMoved) return; // skip if drag happened
-    if (!overlay.classList.contains('open')) return;
-    // Toggle between 1x and 2.5x
+    if (clickMoved || !overlay.classList.contains('open')) return;
     const targetZoom = (zoom <= 1.01) ? 2.5 : 1;
-    // Zoom toward cursor position a bit (desktop nicety)
     if (targetZoom > zoom) {
       const stg = stage.getBoundingClientRect();
-      const img = lbImg.getBoundingClientRect();
       const cx = e.clientX - stg.left - stg.width / 2;
       const cy = e.clientY - stg.top  - stg.height / 2;
       panX = -cx * (targetZoom - 1) / targetZoom;
       panY = -cy * (targetZoom - 1) / targetZoom;
-    } else {
-      panX = 0; panY = 0;
-    }
-    zoom = targetZoom;
-    clampPan(); applyTransform();
+    } else { panX = 0; panY = 0; }
+    zoom = targetZoom; clampPan(); applyTransform();
   });
 
   // Wheel zoom (desktop)
@@ -219,22 +183,22 @@ document.addEventListener("DOMContentLoaded", () => {
     const delta = -Math.sign(e.deltaY) * 0.2;
     const newZoom = Math.min(maxZoom, Math.max(minZoom, zoom + delta));
     if (newZoom === zoom) return;
-    // Zoom toward pointer
     const stg = stage.getBoundingClientRect();
     const cx = e.clientX - stg.left - stg.width / 2;
     const cy = e.clientY - stg.top  - stg.height / 2;
     const scale = newZoom / zoom;
     panX = (panX - cx) * scale + cx;
     panY = (panY - cy) * scale + cy;
-    zoom = newZoom;
-    clampPan(); applyTransform();
+    zoom = newZoom; clampPan(); applyTransform();
   }, { passive: false });
 
-  // Touch: pinch zoom + drag
+  // Touch: pinch + drag
   stage.addEventListener('touchstart', (e) => {
     if (!overlay.classList.contains('open')) return;
     if (e.touches.length === 2) {
       lastTouchDist = getTouchDist(e.touches[0], e.touches[1]);
+    } else if (e.touches.length === 1) {
+      lastX = e.touches[0].clientX; lastY = e.touches[0].clientY;
     }
   }, {passive:true});
 
@@ -243,42 +207,44 @@ document.addEventListener("DOMContentLoaded", () => {
     if (e.touches.length === 2) {
       e.preventDefault();
       const d = getTouchDist(e.touches[0], e.touches[1]);
-      const delta = (d - lastTouchDist) / 200; // sensitivity
+      const delta = (d - lastTouchDist) / 200;
       lastTouchDist = d;
       zoom = Math.min(maxZoom, Math.max(minZoom, zoom + delta));
       clampPan(); applyTransform();
     } else if (e.touches.length === 1 && zoom > 1) {
       e.preventDefault();
       const t = e.touches[0];
-      // use movement from last move
-      if (lastX !== 0 || lastY !== 0) {
-        panX += (t.clientX - lastX);
-        panY += (t.clientY - lastY);
-        clampPan(); applyTransform();
-      }
+      panX += (t.clientX - lastX); panY += (t.clientY - lastY);
       lastX = t.clientX; lastY = t.clientY;
+      clampPan(); applyTransform();
     }
   }, {passive:false});
 
-  stage.addEventListener('touchend', (e) => {
-    if (e.touches.length === 0) { lastX = lastY = 0; }
-  });
+  function getTouchDist(a, b) { return Math.hypot(a.clientX - b.clientX, a.clientY - b.clientY); }
 
-  function getTouchDist(a, b) {
-    const dx = a.clientX - b.clientX, dy = a.clientY - b.clientY;
-    return Math.hypot(dx, dy);
-  }
+  // ---------- EVENT DELEGATION (fix for desktop conflicts) ----------
+  // Catch clicks anywhere inside #main that originate from an IMG (or its wrapping A)
+  const main = document.getElementById('main');
+  if (main) {
+    main.addEventListener('click', (e) => {
+      // Find the image that was clicked
+      const img = e.target.closest('#main img:not([data-no-lightbox])');
+      if (!img) return;
 
-  // Bind click to images; stop parent <a href="#"> default if present
-  imgs.forEach(img => {
-    const parentA = img.closest('a');
-    const open = (ev) => {
-      if (ev) { ev.preventDefault(); ev.stopPropagation(); }
+      // If image is inside an anchor, block the anchor’s default (#) behavior
+      const parentA = img.closest('a');
+      if (parentA) {
+        // Only handle if it’s a local “image featured” style link or href="#" etc.
+        const href = parentA.getAttribute('href') || '';
+        if (href === '#' || href.startsWith('#') || href.toLowerCase().startsWith('javascript:')) {
+          e.preventDefault();
+        }
+        e.stopPropagation();
+      }
+
       const src = img.getAttribute('data-lb-src') || img.currentSrc || img.src;
       const cap = img.getAttribute('data-caption') || img.alt || '';
       openLightbox(src, cap);
-    };
-    if (parentA) parentA.addEventListener('click', open);
-    else img.addEventListener('click', open);
-  });
+    }, true); // <-- use capture phase so we beat other handlers
+  }
 });
