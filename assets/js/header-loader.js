@@ -34,40 +34,50 @@ document.addEventListener("DOMContentLoaded", function () {
 
     function initMobileMenu() {
         const nav = document.getElementById("nav");
-        const menuBtn = document.createElement("button");
-        menuBtn.id = "mobile-menu-btn";
-        menuBtn.innerHTML = "☰";
-        menuBtn.classList.add("mobile-menu-btn");
 
-        const langBtnMobile = document.createElement("button");
-        langBtnMobile.id = "mobile-lang-btn";
-        langBtnMobile.innerHTML = "🌐";
-        langBtnMobile.classList.add("mobile-lang-btn");
+        // Prevent duplicate buttons
+        if (!document.getElementById("mobile-menu-btn")) {
+            const menuBtn = document.createElement("button");
+            menuBtn.id = "mobile-menu-btn";
+            menuBtn.innerHTML = "☰";
+            menuBtn.classList.add("mobile-menu-btn");
 
-        const header = document.getElementById("header");
-        const logo = document.getElementById("logo");
+            menuBtn.addEventListener("click", () => {
+                nav.classList.toggle("open");
+            });
 
-        header.insertBefore(menuBtn, logo);
-        header.appendChild(langBtnMobile);
+            document.getElementById("header").insertBefore(menuBtn, document.getElementById("logo"));
+        }
 
-        menuBtn.addEventListener("click", () => {
-            nav.classList.toggle("open");
-        });
+        if (!document.getElementById("mobile-lang-btn")) {
+            const langBtnMobile = document.createElement("button");
+            langBtnMobile.id = "mobile-lang-btn";
+            langBtnMobile.classList.add("mobile-lang-btn");
+            updateLangBtnLabel(langBtnMobile);
 
-        langBtnMobile.addEventListener("click", () => {
-            toggleLanguage();
-        });
+            langBtnMobile.addEventListener("click", () => {
+                toggleLanguage();
+            });
+
+            document.getElementById("header").appendChild(langBtnMobile);
+        }
     }
 
     function initLanguageToggle() {
         const langBtnDesktop = document.getElementById("languageToggleButton");
         if (!langBtnDesktop) return;
 
-        langBtnDesktop.innerHTML = "🌐";
+        updateLangBtnLabel(langBtnDesktop);
+
         langBtnDesktop.addEventListener("click", (e) => {
             e.preventDefault();
             toggleLanguage();
         });
+    }
+
+    function updateLangBtnLabel(btn) {
+        const isCN = currentPath.includes('-cn.html');
+        btn.innerHTML = `🌐 ${isCN ? 'English' : '中文'}`;
     }
 
     function toggleLanguage() {
@@ -101,7 +111,7 @@ document.addEventListener("DOMContentLoaded", function () {
         });
     }
 
-    // Add CSS directly here
+    // Styling
     const style = document.createElement("style");
     style.textContent = `
         #header {
@@ -114,8 +124,9 @@ document.addEventListener("DOMContentLoaded", function () {
             z-index: 999;
             display: flex;
             align-items: center;
-            padding: 0.5rem 1rem;
+            padding: 0.75rem 1rem;
             transition: transform 0.3s ease;
+            min-height: 70px;
         }
         #logo { flex: 1; }
         #nav ul { list-style: none; margin: 0; padding: 0; display: flex; align-items: center; }
@@ -126,7 +137,7 @@ document.addEventListener("DOMContentLoaded", function () {
         .language-toggle-wrapper a {
             border: 2px solid #007BFF;
             border-radius: 6px;
-            padding: 0.5rem;
+            padding: 0.5rem 0.75rem;
             font-weight: normal;
             background: #f0f8ff;
         }
@@ -135,16 +146,16 @@ document.addEventListener("DOMContentLoaded", function () {
             background: #007BFF;
             color: white;
             border: none;
-            font-size: 1.5rem;
+            font-size: 1.2rem;
             padding: 0.5rem 0.75rem;
             margin: 0 0.25rem;
             border-radius: 4px;
             cursor: pointer;
         }
         #nav { display: none; }
-        #nav.open { display: block; position: absolute; top: 60px; left: 0; width: 100%; background: white; }
+        #nav.open { display: block; position: absolute; top: 70px; left: 0; width: 100%; background: white; }
         #nav.open ul { flex-direction: column; }
-        #nav.open a { font-size: 1.2rem; border-bottom: 1px solid #ddd; }
+        #nav.open a { font-size: 1.1rem; border-bottom: 1px solid #ddd; }
         @media(min-width: 769px) {
             .mobile-menu-btn, .mobile-lang-btn { display: none; }
             #nav { display: block !important; position: static; }
