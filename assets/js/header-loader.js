@@ -9,7 +9,7 @@ document.addEventListener("DOMContentLoaded", function () {
   const isCN = currentPath.includes("-cn.html");
   const headerFile = isCN ? "header-cn.html" : "header.html";
 
-  // For CN pages, set lang attribute early (helps CSS/UA line breaking)
+  // Help the browser treat CJK correctly (line breaking/spacing)
   if (isCN) {
     document.documentElement.setAttribute("lang", "zh-CN");
   }
@@ -22,13 +22,12 @@ document.addEventListener("DOMContentLoaded", function () {
     .then(html => {
       headerContainer.innerHTML = html;
 
-      initDropotron();             // desktop dropdown animation
-      buildMobileMenuPure();       // our own hamburger + panel (+backdrop)
-      initLanguageToggle();        // desktop + mobile
-      highlightActiveTab();        // desktop underline current page
-      setupStickyHeader();         // smooth hide/show
-      applyPageFixes();            // per-page/mobile layout fixes
-      injectStyles();              // all CSS tweaks
+      initDropotron();          // desktop dropdown (Products)
+      buildMobileMenu();        // hamburger + slide-out panel + backdrop
+      initLanguageToggle();     // desktop + mobile
+      highlightActiveTab();     // underline current page
+      setupStickyHeader();      // smooth hide/show header
+      injectStyles();           // all CSS tweaks (mobile, CJK, icons, etc.)
     })
     .catch(err => console.error("Header load failed:", err));
 
@@ -44,25 +43,25 @@ document.addEventListener("DOMContentLoaded", function () {
     }
   }
 
-  // ------------------ Pure JS mobile menu (with backdrop & depth) ------------------
-  function buildMobileMenuPure() {
-    // Remove previous instances
+  // ------------------ Mobile menu: pure JS + backdrop ------------------
+  function buildMobileMenu() {
+    // Clean previous instances to prevent duplicates
     document.getElementById("navPanel")?.remove();
     document.getElementById("navButton")?.remove();
     document.getElementById("navBackdrop")?.remove();
 
-    // Backdrop for outside-click close
+    // Backdrop (tap outside to close)
     const backdrop = document.createElement("div");
     backdrop.id = "navBackdrop";
     document.body.appendChild(backdrop);
 
-    // Hamburger (reuse theme id so it inherits skin)
+    // Hamburger (reuse theme id so theme skin applies)
     const navButton = document.createElement("div");
     navButton.id = "navButton";
     navButton.innerHTML = '<a href="#navPanel" class="toggle" aria-label="Open Menu"></a>';
     document.body.appendChild(navButton);
 
-    // Slide-out panel
+    // Panel
     const panel = document.createElement("div");
     panel.id = "navPanel";
     panel.innerHTML = '<nav class="panel-nav"><ul class="panel-list"></ul></nav>';
@@ -87,7 +86,7 @@ document.addEventListener("DOMContentLoaded", function () {
     if (desktopNav) {
       const allLinks = desktopNav.querySelectorAll('a[href]:not(#languageToggleButton)');
       allLinks.forEach(a => {
-        // Depth = number of ancestor ULs within #nav minus 1 (top-level = 0)
+        // Depth = (number of ancestor ULs within #nav) - 1  (top-level => 0)
         let depth = 0, el = a;
         while (el && el !== desktopNav) {
           if (el.tagName === "UL") depth++;
@@ -99,7 +98,7 @@ document.addEventListener("DOMContentLoaded", function () {
         const clone = document.createElement("a");
         clone.href = a.getAttribute("href");
         clone.className = "link";
-        clone.classList.add(`depth-${depth}`); // add depth-0 for mains, depth-1+ for sub
+        clone.classList.add(`depth-${depth}`);
         clone.textContent = a.textContent.trim();
         li.appendChild(clone);
         panelList.appendChild(li);
@@ -108,19 +107,20 @@ document.addEventListener("DOMContentLoaded", function () {
     }
 
     if (linksAdded === 0) {
+      // Safety fallback to avoid an empty panel
       const fallback = document.createElement("li");
       fallback.innerHTML = '<a class="link depth-0" href="index.html">Menu</a>';
       panelList.appendChild(fallback);
     }
 
-    // Open/close with class on body
+    // Open/close
     const OPEN = "mobile-menu-open";
     navButton.querySelector(".toggle").addEventListener("click", (e) => {
       e.preventDefault();
       document.body.classList.toggle(OPEN);
     });
 
-    // Close on outside click (backdrop)
+    // Close on outside click
     backdrop.addEventListener("click", () => {
       document.body.classList.remove(OPEN);
     });
@@ -179,14 +179,6 @@ document.addEventListener("DOMContentLoaded", function () {
     });
   }
 
-  // ------------------ Per-page/mobile fixes ------------------
-  function applyPageFixes() {
-    // Keep right sidebar visible on mobile for dendrobium-huoshan-cn.html
-    if (/dendrobium-huoshan-cn\.html$/.test(currentPath)) {
-      document.body.classList.add("fix-cn-huoshan");
-    }
-  }
-
   // ------------------ Styles ------------------
   function injectStyles() {
     const PANEL_WIDTH = 360; // px
@@ -195,10 +187,10 @@ document.addEventListener("DOMContentLoaded", function () {
     const s = document.createElement("style");
     s.id = "header-dynamic-styles";
     s.textContent = `
-      /* Keep content clear of fixed header */
+      /* Keep content clear of fixed header when using anchor links */
       html { scroll-padding-top: 80px; }
 
-      /* Desktop readability */
+      /* Desktop readability + active tab */
       #nav > ul > li > a { font-weight: 700; color: #1f2937; }
       #nav > ul > li > a:hover { color: #111827; }
       #nav a.active-tab { border-bottom: 3px solid #007bff; }
@@ -222,7 +214,7 @@ document.addEventListener("DOMContentLoaded", function () {
         to   { opacity: 1; transform: translateY(0); }
       }
 
-      /* --- PURE JS MOBILE PANEL + BACKDROP --- */
+      /* --- Mobile: hamburger + backdrop + panel --- */
       #navButton { position: fixed; top: 0; left: 0; right: 0; z-index: 10001; }
       @media (min-width: 841px) { #navButton, #navBackdrop { display: none; } }
 
@@ -252,8 +244,9 @@ document.addEventListener("DOMContentLoaded", function () {
 
       #navPanel .panel-nav { padding-top: 8px; }
       #navPanel .panel-list { list-style: none; margin: 0; padding: 0; }
-
       #navPanel .panel-list li { list-style: none; }
+
+      /* Mobile links (covers any link we inject) */
       #navPanel .panel-list a.link {
         display: block;
         padding: 0.95rem 1rem;
@@ -265,22 +258,19 @@ document.addEventListener("DOMContentLoaded", function () {
         word-break: break-word;
         hyphens: auto;
       }
-      /* MAIN (depth-0) vs SUBMENU (depth-1+) */
-      #navPanel .panel-list a.link.depth-0 {
-        font-weight: 800;
-        color: #ffffff !important;
-      }
+
+      /* Differentiate main vs submenu items */
+      #navPanel .panel-list a.link.depth-0 { font-weight: 800; color: #ffffff !important; }
       #navPanel .panel-list a.link.depth-1,
-      #navPanel .panel-list a.link.depth-2 {
-        font-weight: 600;
-        color: rgba(255,255,255,0.85) !important;
-      }
+      #navPanel .panel-list a.link.depth-2 { font-weight: 600; color: rgba(255,255,255,0.85) !important; }
+
       /* Indentation for submenu */
       #navPanel .panel-list a.link.depth-1 { padding-left: 2rem; }
       #navPanel .panel-list a.link.depth-2 { padding-left: 2.75rem; }
+
       #navPanel .panel-list a.link:hover { background: rgba(255,255,255,0.06); }
 
-      /* Mobile language toggle at top */
+      /* Language toggle at top of panel */
       #navPanel .panel-lang-li {
         margin: 10px 8px 6px 8px;
         padding-bottom: 10px;
@@ -298,50 +288,31 @@ document.addEventListener("DOMContentLoaded", function () {
         text-decoration: none !important;
       }
 
-      /* --- CONTENT WRAPPING / CHINESE SPACING ON MOBILE --- */
+      /* --- Content wrapping + CJK fixes on mobile --- */
       @media (max-width: 840px) {
-        /* Normalize letter-spacing for Chinese pages to avoid spaced glyphs */
+        /* Avoid inter-character spacing & justification on zh pages */
         html[lang="zh-CN"] #main { letter-spacing: normal !important; }
-        html[lang="zh-CN"] #main p, 
-        html[lang="zh-CN"] #main a, 
-        html[lang="zh-CN"] #main li, 
-        html[lang="zh-CN"] #main h1, 
-        html[lang="zh-CN"] #main h2, 
+        html[lang="zh-CN"] #main p,
+        html[lang="zh-CN"] #main a,
+        html[lang="zh-CN"] #main li,
+        html[lang="zh-CN"] #main h1,
+        html[lang="zh-CN"] #main h2,
         html[lang="zh-CN"] #main h3 {
           letter-spacing: normal !important;
+          text-align: left !important;   /* prevents "来源" from being justified */
         }
+
         /* Safer wrapping for long words/URLs */
         #main, #main *:not(#navPanel) {
           overflow-wrap: anywhere;
           word-break: break-word;
         }
         #main img { max-width: 100%; height: auto; }
-      }
 
-      /* --- Bigger "Learn More" on mobile --- */
-      @media (max-width: 840px) {
+        /* Bigger "Learn More" buttons */
         .button, .button.primary {
           font-size: 1rem !important;
           line-height: 3.25em !important;
-        }
-      }
-
-      /* --- Page-specific mobile 2-column fix (content + sidebar) --- */
-      @media (max-width: 840px) {
-        body.fix-cn-huoshan .wrapper.style4.container {
-          display: grid !important;
-          grid-template-columns: 3fr 2fr;   /* ~60% / 40% */
-          gap: 1rem;
-          align-items: start;
-        }
-        body.fix-cn-huoshan .wrapper.style4.container > .col-8,
-        body.fix-cn-huoshan .wrapper.style4.container > .col-12,
-        body.fix-cn-huoshan .wrapper.style4.container > [class*="col-8"] {
-          grid-column: 1;
-        }
-        body.fix-cn-huoshan .wrapper.style4.container > .col-4,
-        body.fix-cn-huoshan .wrapper.style4.container > [class*="col-4"] {
-          grid-column: 2;
         }
       }
 
