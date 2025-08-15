@@ -17,12 +17,12 @@ document.addEventListener("DOMContentLoaded", function () {
     .then((html) => {
       headerContainer.innerHTML = html;
 
-      buildMobilePanel();      // theme-native #navPanel + #navButton
-      initDropotronDesktop();  // desktop dropdown fade
-      initLanguageToggle();    // desktop + mobile
-      highlightActiveTab();    // active page underline
-      setupStickyHeader();     // smooth hide/show
-      injectStyles();          // widths, colors, icons, typography
+      buildMobilePanel();      // Mobile: theme-native #navPanel + #navButton (robust)
+      initDropotronDesktop();  // Desktop: Products dropdown (fade)
+      initLanguageToggle();    // Desktop + Mobile toggle
+      highlightActiveTab();    // Desktop underline for current page
+      setupStickyHeader();     // Smooth hide/show
+      injectStyles();          // Panel width, colors, icons, typography (global)
     })
     .catch((err) => console.error("Failed to load header:", err));
 
@@ -43,8 +43,8 @@ document.addEventListener("DOMContentLoaded", function () {
   }
 
   // --------------------------------------------------
-  // Mobile: build navPanel (robust: with or without navList)
-  // Uses theme's #navButton per your CSS
+  // Mobile: build navPanel using theme-native approach
+  // Robust: works with or without $.fn.navList()
   // --------------------------------------------------
   function buildMobilePanel() {
     const hasPanel = window.jQuery && $.fn.panel;
@@ -55,7 +55,7 @@ document.addEventListener("DOMContentLoaded", function () {
       return;
     }
 
-    // Clean up previous instances to avoid duplicates
+    // Remove any existing instances (avoid duplicates)
     $("#navPanel, #navButton").remove();
 
     // Create panel container
@@ -65,29 +65,33 @@ document.addEventListener("DOMContentLoaded", function () {
     // Language slot at the very top (we inject the button later)
     $panelNav.append('<div id="mobileLangWrap" class="mobile-lang-wrap"></div>');
 
-    // Build menu content
+    // Try to build menu contents
+    let appendedSomething = false;
     try {
       if (hasNavList) {
-        // Preferred: flat list with .link/.depth classes
+        // Preferred: theme utility returns a flat list of anchors
         const navListHtml = $("#nav").navList();
         $panelNav.append(navListHtml);
+        appendedSomething = true;
       } else {
-        // Fallback: clone the desktop nav list and keep anchors
+        // Fallback: clone the desktop nav list
         const $clone = $("#nav > ul").clone(true, true);
-        // Remove the desktop language item if present
         $clone.find("#languageToggleButton").closest("li").remove();
-        $panelNav.append($clone);
+        if ($clone.length) {
+          $panelNav.append($clone);
+          appendedSomething = true;
+        }
       }
     } catch (e) {
-      console.warn("navList()/clone failed, fallback to minimal links:", e);
-      // Absolute fallback: scrape links
-      const links = Array.from(document.querySelectorAll("#nav a[href]"))
-        .map((a) => `<a class="link depth-0" href="${a.getAttribute("href")}">${a.textContent.trim()}</a>`)
-        .join("");
-      $panelNav.append(links);
+      console.warn("navList()/clone failed:", e);
     }
 
-    // If a desktop language item slipped through, remove it in the panel
+    // Absolute fallback: ensure there is at least one clickable item
+    if (!appendedSomething) {
+      $panelNav.append('<a class="link depth-0" href="index.html">Menu</a>');
+    }
+
+    // If a desktop language entry slipped through, remove it in the panel
     $panelNav.find("a#languageToggleButton").parent("li, div").remove();
 
     // Theme-native hamburger
@@ -107,7 +111,7 @@ document.addEventListener("DOMContentLoaded", function () {
       side: "left",
     });
 
-    // Close panel when a link is clicked (works for .link or plain <a>)
+    // Close panel when a link is clicked (covers .link and plain <a>)
     $(document).on("click", "#navPanel .link, #navPanel a[href]", function () {
       document.body.classList.remove("navPanel-visible");
     });
@@ -179,6 +183,7 @@ document.addEventListener("DOMContentLoaded", function () {
 
   // --------------------------------------
   // Styles (scoped, override theme safely)
+  // Applied globally (no media query) to avoid white panel issues
   // --------------------------------------
   function injectStyles() {
     // Keep transform distances in sync with width
@@ -217,71 +222,70 @@ document.addEventListener("DOMContentLoaded", function () {
         to   { opacity: 1; transform: translateY(0); }
       }
 
-      /* --- MOBILE PANEL: width + matching transforms + dark bg --- */
-      @media screen and (max-width: 840px) {
-        #navPanel {
-          width: ${PANEL_WIDTH}px !important;
-          -moz-transform: translateX(-${PANEL_WIDTH}px) !important;
-          -webkit-transform: translateX(-${PANEL_WIDTH}px) !important;
-          -ms-transform: translateX(-${PANEL_WIDTH}px) !important;
-          transform: translateX(-${PANEL_WIDTH}px) !important;
+      /* --- MOBILE PANEL: force width + transforms + dark bg globally --- */
+      #navPanel {
+        width: ${PANEL_WIDTH}px !important;
+        -moz-transform: translateX(-${PANEL_WIDTH}px) !important;
+        -webkit-transform: translateX(-${PANEL_WIDTH}px) !important;
+        -ms-transform: translateX(-${PANEL_WIDTH}px) !important;
+        transform: translateX(-${PANEL_WIDTH}px) !important;
 
-          background: #1c2021 !important;  /* force dark background */
-          color: #fff !important;
-          font-size: 1rem;
-        }
-        body.navPanel-visible #page-wrapper {
-          -moz-transform: translateX(${PANEL_WIDTH}px) !important;
-          -webkit-transform: translateX(${PANEL_WIDTH}px) !important;
-          -ms-transform: translateX(${PANEL_WIDTH}px) !important;
-          transform: translateX(${PANEL_WIDTH}px) !important;
-        }
-        body.navPanel-visible #navButton {
-          -moz-transform: translateX(${PANEL_WIDTH}px) !important;
-          -webkit-transform: translateX(${PANEL_WIDTH}px) !important;
-          -ms-transform: translateX(${PANEL_WIDTH}px) !important;
-          transform: translateX(${PANEL_WIDTH}px) !important;
-        }
+        background: #1c2021 !important;  /* force dark background */
+        color: #fff !important;
+        font-size: 1rem;
+      }
+      body.navPanel-visible #page-wrapper {
+        -moz-transform: translateX(${PANEL_WIDTH}px) !important;
+        -webkit-transform: translateX(${PANEL_WIDTH}px) !important;
+        -ms-transform: translateX(${PANEL_WIDTH}px) !important;
+        transform: translateX(${PANEL_WIDTH}px) !important;
+      }
+      body.navPanel-visible #navButton {
+        -moz-transform: translateX(${PANEL_WIDTH}px) !important;
+        -webkit-transform: translateX(${PANEL_WIDTH}px) !important;
+        -ms-transform: translateX(${PANEL_WIDTH}px) !important;
+        transform: translateX(${PANEL_WIDTH}px) !important;
+      }
 
-        /* Use hamburger only; hide long title text */
-        #navButton .title { display: none; }
+      /* Hide long title text inside navButton, keep only hamburger */
+      #navButton .title { display: none !important; }
 
-        /* Panel links (covers navList() .link and plain <a>) */
-        #navPanel nav ul { list-style: none; margin: 0; padding: 0; }
-        #navPanel nav a, #navPanel nav .link {
-          display: block;
-          padding: 0.95rem 1rem;
-          border-bottom: 1px solid rgba(255,255,255,0.08);
-          color: #fff !important;
-          text-decoration: none;
-          font-weight: 600;
-          font-size: 1.15rem;
-          line-height: 1.5;
-          white-space: normal;
-          overflow-wrap: break-word;
-          word-break: break-word;
-          hyphens: auto;
-        }
-        #navPanel nav a:hover, #navPanel nav .link:hover {
-          background: rgba(255,255,255,0.06);
-        }
+      /* Panel links: style both .link and plain <a> (works with navList or clone) */
+      #navPanel nav ul { list-style: none; margin: 0; padding: 0; }
+      #navPanel nav a, #navPanel nav .link {
+        display: block;
+        padding: 0.95rem 1rem;
+        border-bottom: 1px solid rgba(255,255,255,0.08);
+        color: #fff !important;
+        text-decoration: none !important;
+        font-weight: 600;
+        font-size: 1.15rem;
+        line-height: 1.5;
+        white-space: normal;
+        overflow-wrap: break-word;
+        word-break: break-word;
+        hyphens: auto;
+      }
+      #navPanel nav a:hover, #navPanel nav .link:hover {
+        background: rgba(255,255,255,0.06);
+      }
 
-        /* Mobile language toggle at top */
-        .mobile-lang-wrap {
-          padding: 10px;
-          border-bottom: 1px solid rgba(255,255,255,0.08);
-          margin-bottom: 6px;
-        }
-        .mobile-lang-wrap .lang-toggle.mobile {
-          display: block;
-          text-align: center;
-          background: #2563eb;
-          color: #fff !important;
-          border-radius: 8px;
-          padding: 0.65rem 0.8rem;
-          font-weight: 800;
-          font-size: 1.05rem;
-        }
+      /* Mobile language toggle (top of panel) */
+      .mobile-lang-wrap {
+        padding: 10px;
+        border-bottom: 1px solid rgba(255,255,255,0.08);
+        margin-bottom: 6px;
+      }
+      .mobile-lang-wrap .lang-toggle.mobile {
+        display: block;
+        text-align: center;
+        background: #2563eb;
+        color: #fff !important;
+        border-radius: 8px;
+        padding: 0.65rem 0.8rem;
+        font-weight: 800;
+        font-size: 1.05rem;
+        text-decoration: none !important;
       }
 
       /* --- Footer: YouTube red + size parity with Facebook --- */
