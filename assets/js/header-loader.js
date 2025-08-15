@@ -17,27 +17,16 @@ document.addEventListener("DOMContentLoaded", function () {
     .then(html => {
       headerContainer.innerHTML = html;
 
-      // 1) Desktop dropdown (keep Dropotron if present)
-      initDropotron();
-
-      // 2) Build mobile hamburger + panel (NO theme utilities)
-      buildMobileMenuPure();
-
-      // 3) Language toggle (desktop + mobile)
-      initLanguageToggle();
-
-      // 4) Active tab (desktop)
-      highlightActiveTab();
-
-      // 5) Sticky header
-      setupStickyHeader();
-
-      // 6) Inject all styles (mobile panel width, colors, icons, etc.)
-      injectStyles();
+      initDropotron();          // keep fancy desktop dropdown
+      buildMobileMenuPure();    // our own hamburger + panel (depth-aware)
+      initLanguageToggle();     // desktop + mobile
+      highlightActiveTab();     // underline current page
+      setupStickyHeader();      // smooth hide/show header
+      injectStyles();           // all styles: indent submenu, wrap long text, mobile button size, etc.
     })
     .catch(err => console.error("Header load failed:", err));
 
-  // ---- Keep Dropotron for desktop if available ----
+  // ------------------ Desktop dropdown (Dropotron) ------------------
   function initDropotron() {
     if (window.jQuery && $.fn.dropotron) {
       $("#nav > ul").dropotron({
@@ -49,21 +38,19 @@ document.addEventListener("DOMContentLoaded", function () {
     }
   }
 
-  // ---- Pure JS mobile menu (no $.panel / no $.navList) ----
+  // ------------------ Pure JS mobile menu (depth-aware) ------------------
   function buildMobileMenuPure() {
-    // Remove any previous instances
-    const oldPanel = document.getElementById("navPanel");
-    const oldBtn   = document.getElementById("navButton");
-    if (oldPanel) oldPanel.remove();
-    if (oldBtn) oldBtn.remove();
+    // Remove previous instances
+    document.getElementById("navPanel")?.remove();
+    document.getElementById("navButton")?.remove();
 
-    // Create hamburger (reuse theme id so existing CSS skin applies)
+    // Create hamburger (reuse theme IDs so CSS skins it)
     const navButton = document.createElement("div");
     navButton.id = "navButton";
     navButton.innerHTML = '<a href="#navPanel" class="toggle" aria-label="Open Menu"></a>';
     document.body.appendChild(navButton);
 
-    // Create slide panel
+    // Create slide-out panel
     const panel = document.createElement("div");
     panel.id = "navPanel";
     panel.innerHTML = '<nav class="panel-nav"><ul class="panel-list"></ul></nav>';
@@ -71,7 +58,7 @@ document.addEventListener("DOMContentLoaded", function () {
 
     const panelList = panel.querySelector(".panel-list");
 
-    // Language toggle slot at top
+    // Language toggle at the very top
     const langLi = document.createElement("li");
     langLi.className = "panel-lang-li";
     const langA = document.createElement("a");
@@ -81,33 +68,44 @@ document.addEventListener("DOMContentLoaded", function () {
     langLi.appendChild(langA);
     panelList.appendChild(langLi);
 
-    // Build flat list of links from desktop nav
-    const desktopLinks = Array.from(document.querySelectorAll(
-      '#nav > ul > li > a[href]:not(#languageToggleButton), ' +         // top-level
-      '#nav > ul > li ul li > a[href]'                                  // sub-items
-    ));
+    // Build a flat list of links and mark submenu depth
+    const desktopNav = document.getElementById("nav");
+    let linksAdded = 0;
 
-    if (desktopLinks.length === 0) {
-      // Absolute fallback – avoid “blank” panel
-      const fallback = document.createElement("li");
-      fallback.innerHTML = '<a class="link" href="index.html">Menu</a>';
-      panelList.appendChild(fallback);
-    } else {
-      desktopLinks.forEach(a => {
+    if (desktopNav) {
+      const allLinks = desktopNav.querySelectorAll('a[href]:not(#languageToggleButton)');
+      allLinks.forEach(a => {
+        // Determine depth: number of ancestor <ul> inside #nav minus 1 (top-level = 0)
+        let depth = 0;
+        let el = a;
+        while (el && el !== desktopNav) {
+          if (el.tagName === "UL") depth++;
+          el = el.parentElement;
+        }
+        depth = Math.max(0, depth - 1); // normalize
+
         const li = document.createElement("li");
         const clone = document.createElement("a");
         clone.href = a.getAttribute("href");
         clone.className = "link";
+        if (depth > 0) clone.classList.add(`depth-${depth}`); // depth-1, depth-2, ...
         clone.textContent = a.textContent.trim();
         li.appendChild(clone);
         panelList.appendChild(li);
+        linksAdded++;
       });
     }
 
-    // Toggle class on body to open/close (pure JS)
+    if (linksAdded === 0) {
+      // Absolute fallback – avoid blank panel
+      const fallback = document.createElement("li");
+      fallback.innerHTML = '<a class="link" href="index.html">Menu</a>';
+      panelList.appendChild(fallback);
+    }
+
+    // Toggle open/close by toggling class on <body>
     const OPEN_CLASS = "mobile-menu-open";
-    const toggleBtn = navButton.querySelector(".toggle");
-    toggleBtn.addEventListener("click", (e) => {
+    navButton.querySelector(".toggle").addEventListener("click", (e) => {
       e.preventDefault();
       document.body.classList.toggle(OPEN_CLASS);
     });
@@ -120,7 +118,7 @@ document.addEventListener("DOMContentLoaded", function () {
       }
     });
 
-    // Wire mobile language toggle
+    // Mobile language toggle click
     langA.addEventListener("click", (e) => {
       e.preventDefault();
       const target = isCN ? currentPath.replace("-cn.html", ".html")
@@ -129,6 +127,7 @@ document.addEventListener("DOMContentLoaded", function () {
     });
   }
 
+  // ------------------ Language toggle (desktop) ------------------
   function initLanguageToggle() {
     const desktopBtn = document.getElementById("languageToggleButton");
     if (desktopBtn) {
@@ -143,6 +142,7 @@ document.addEventListener("DOMContentLoaded", function () {
     }
   }
 
+  // ------------------ Active tab underline (desktop) ------------------
   function highlightActiveTab() {
     const currentFile = currentPath.split("/").pop();
     document.querySelectorAll("#nav a").forEach(a => {
@@ -151,6 +151,7 @@ document.addEventListener("DOMContentLoaded", function () {
     });
   }
 
+  // ------------------ Sticky header ------------------
   function setupStickyHeader() {
     const header = document.getElementById("header");
     if (!header) return;
@@ -165,13 +166,11 @@ document.addEventListener("DOMContentLoaded", function () {
     });
   }
 
+  // ------------------ Styles ------------------
   function injectStyles() {
-    // One source of truth for panel width
     const PANEL_WIDTH = 360; // px
 
-    const old = document.getElementById("header-dynamic-styles");
-    if (old) old.remove();
-
+    document.getElementById("header-dynamic-styles")?.remove();
     const s = document.createElement("style");
     s.id = "header-dynamic-styles";
     s.textContent = `
@@ -203,7 +202,6 @@ document.addEventListener("DOMContentLoaded", function () {
       }
 
       /* --- PURE JS MOBILE PANEL --- */
-      /* Use the theme's #navButton skin, but our own open/close class */
       #navButton { position: fixed; top: 0; left: 0; right: 0; z-index: 10001; }
       @media (min-width: 841px) { #navButton { display: none; } }
 
@@ -214,21 +212,14 @@ document.addEventListener("DOMContentLoaded", function () {
         transform: translateX(-${PANEL_WIDTH}px);
         transition: transform 0.5s ease;
         z-index: 10002;
-        background: #1c2021;  /* force dark */
+        background: #1c2021;  /* dark */
         color: #fff;
         overflow-y: auto;
         padding: 0.25em 0.75em 1em 0.75em;
       }
-      body.mobile-menu-open #navPanel {
-        transform: translateX(0);
-      }
-      /* Shift page-wrapper the same distance like the original theme */
-      body.mobile-menu-open #page-wrapper {
-        transform: translateX(${PANEL_WIDTH}px);
-        transition: transform 0.5s ease;
-      }
+      body.mobile-menu-open #navPanel { transform: translateX(0); }
+      body.mobile-menu-open #page-wrapper { transform: translateX(${PANEL_WIDTH}px); transition: transform 0.5s ease; }
 
-      /* Panel content */
       #navPanel .panel-nav { padding-top: 8px; }
       #navPanel .panel-list { list-style: none; margin: 0; padding: 0; }
 
@@ -249,6 +240,10 @@ document.addEventListener("DOMContentLoaded", function () {
       }
       #navPanel .panel-list a.link:hover { background: rgba(255,255,255,0.06); }
 
+      /* Indentation for submenu items (depth-1, depth-2...) */
+      #navPanel .panel-list a.link.depth-1 { padding-left: 2rem; font-weight: 600; opacity: 0.95; }
+      #navPanel .panel-list a.link.depth-2 { padding-left: 2.75rem; font-weight: 600; opacity: 0.9; }
+
       /* Mobile language toggle at top */
       #navPanel .panel-lang-li {
         margin: 10px 8px 6px 8px;
@@ -265,6 +260,24 @@ document.addEventListener("DOMContentLoaded", function () {
         font-weight: 800;
         font-size: 1.05rem;
         text-decoration: none !important;
+      }
+
+      /* --- CONTENT WRAPPING ON MOBILE (fix truncation of long URLs/text) --- */
+      @media (max-width: 840px) {
+        #main, #main *:not(#navPanel) {
+          overflow-wrap: anywhere;
+          word-break: break-word;
+        }
+        #main img { max-width: 100%; height: auto; }
+        #main a[href^="http"] { overflow-wrap: anywhere; word-break: break-word; }
+      }
+
+      /* --- Bigger "Learn More" buttons on mobile --- */
+      @media (max-width: 840px) {
+        .button, .button.primary {
+          font-size: 1rem !important;           /* bigger text */
+          line-height: 3.25em !important;       /* keep button height proportional */
+        }
       }
 
       /* Footer icons: unify size + YouTube red */
