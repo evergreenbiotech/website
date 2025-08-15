@@ -14,9 +14,11 @@ document.addEventListener("DOMContentLoaded", function () {
         .then(data => {
             headerContainer.innerHTML = data;
 
-            initLanguageToggle();
             initDropotron();
+            initLanguageToggle();
             highlightActiveTab();
+            setupMobileMenu();
+            setupStickyHeader();
         })
         .catch(err => console.error("Header load error:", err));
 
@@ -28,8 +30,6 @@ document.addEventListener("DOMContentLoaded", function () {
                 alignment: 'center',
                 offsetY: -15
             });
-        } else {
-            console.warn("Dropotron plugin not found");
         }
     }
 
@@ -38,42 +38,36 @@ document.addEventListener("DOMContentLoaded", function () {
         if (!toggleBtn) return;
 
         const globeIcon = "🌐";
-        updateToggleText();
+        toggleBtn.innerHTML = `${globeIcon} ${isChinesePage ? "English" : "中文"}`;
+        toggleBtn.style.background = "#007bff";
+        toggleBtn.style.color = "#fff";
+        toggleBtn.style.padding = "0.4rem 0.8rem";
+        toggleBtn.style.borderRadius = "4px";
+        toggleBtn.style.fontWeight = "bold";
 
         toggleBtn.addEventListener("click", function (e) {
             e.preventDefault();
             const targetUrl = isChinesePage
                 ? currentPath.replace("-cn.html", ".html")
                 : currentPath.replace(".html", "-cn.html");
-
             window.location.href = targetUrl;
         });
 
-        // Inject into mobile header opposite hamburger
-        const titleBar = document.getElementById("titleBar");
-        if (titleBar) {
-            const mobileToggle = toggleBtn.cloneNode(true);
-            mobileToggle.id = "mobileLanguageToggle";
-            mobileToggle.style.fontSize = "1rem";
-            mobileToggle.style.marginRight = "1rem";
-            titleBar.appendChild(mobileToggle);
+        // Clone into mobile menu
+        const mobileNav = document.querySelector("#navPanel nav ul");
+        if (mobileNav) {
+            const li = document.createElement("li");
+            const mobileBtn = toggleBtn.cloneNode(true);
+            li.appendChild(mobileBtn);
+            mobileNav.insertBefore(li, mobileNav.firstChild);
 
-            mobileToggle.addEventListener("click", function (e) {
+            mobileBtn.addEventListener("click", function (e) {
                 e.preventDefault();
                 const targetUrl = isChinesePage
                     ? currentPath.replace("-cn.html", ".html")
                     : currentPath.replace(".html", "-cn.html");
                 window.location.href = targetUrl;
             });
-        }
-
-        function updateToggleText() {
-            toggleBtn.innerHTML = `${globeIcon} ${isChinesePage ? "English" : "中文"}`;
-            toggleBtn.style.background = "#007bff";
-            toggleBtn.style.color = "#fff";
-            toggleBtn.style.padding = "0.4rem 0.8rem";
-            toggleBtn.style.borderRadius = "4px";
-            toggleBtn.style.fontWeight = "bold";
         }
     }
 
@@ -87,7 +81,6 @@ document.addEventListener("DOMContentLoaded", function () {
             }
         });
 
-        // Add style
         const style = document.createElement("style");
         style.textContent = `
             #nav a.active-tab {
@@ -96,5 +89,51 @@ document.addEventListener("DOMContentLoaded", function () {
             }
         `;
         document.head.appendChild(style);
+    }
+
+    function setupMobileMenu() {
+        if (window.jQuery && $.fn.panel) {
+            $('#navPanel').remove(); // remove any duplicate
+            $('<div id="navPanel">' +
+                '<nav>' + $('#nav').html() + '</nav>' +
+              '</div>').appendTo('body')
+              .panel({
+                  delay: 500,
+                  hideOnClick: true,
+                  hideOnSwipe: true,
+                  resetScroll: true,
+                  resetForms: true,
+                  side: 'left'
+              });
+
+            $('#titleBar').remove();
+            $('<div id="titleBar">' +
+                '<a href="#navPanel" class="toggle"></a>' +
+                '<span class="title">' + $('#logo').html() + '</span>' +
+              '</div>').appendTo('body');
+        }
+    }
+
+    function setupStickyHeader() {
+        const header = document.getElementById("header");
+        if (!header) return;
+
+        let lastScrollTop = 0;
+        window.addEventListener("scroll", function () {
+            const st = window.pageYOffset || document.documentElement.scrollTop;
+            if (st > lastScrollTop && st > 100) {
+                header.style.transform = "translateY(-100%)";
+            } else {
+                header.style.transform = "translateY(0)";
+            }
+            lastScrollTop = st <= 0 ? 0 : st;
+        });
+
+        header.style.transition = "transform 0.3s ease-in-out";
+        header.style.position = "fixed";
+        header.style.top = "0";
+        header.style.left = "0";
+        header.style.right = "0";
+        header.style.zIndex = "1000";
     }
 });
