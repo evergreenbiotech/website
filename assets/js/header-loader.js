@@ -17,13 +17,12 @@ document.addEventListener("DOMContentLoaded", function () {
         .then(html => {
             headerContainer.innerHTML = html;
 
-            // Build mobile panel BEFORE adding the mobile language toggle
-            buildMobilePanel();            // clean HTML5 UP-style panel using navList()
-            initDropotronDesktop();        // desktop dropdown fade
-            initLanguageToggle();          // desktop + mobile lang toggle (top of panel)
+            buildMobilePanel();            // mobile: clean panel using navList()
+            initDropotronDesktop();        // desktop: fade dropdown
+            initLanguageToggle();          // desktop + mobile language toggle
             highlightActiveTab();          // underline current page (desktop)
-            setupStickyHeader();           // smooth hide/show on scroll
-            injectStyles();                // colors, fonts, layout fixes
+            setupStickyHeader();           // hide on scroll down, show on scroll up
+            injectStyles();                // all CSS tweaks (mobile width, CTA, footer, icons)
         })
         .catch(err => console.error("Failed to load header:", err));
 
@@ -52,28 +51,29 @@ document.addEventListener("DOMContentLoaded", function () {
             return;
         }
 
-        // Remove any existing instances to avoid duplication
+        // Remove previous instances to avoid dupes
         $("#navPanel, #titleBar").remove();
 
-        // Build the slide-out panel
-        // navList() returns a flat list of links (anchors) with indent classes
-        const navListHtml = $("#nav").navList(); // string of <ul>...</ul> links
+        // Build the slide-out panel container
+        const navListHtml = $("#nav").navList(); // returns flat list markup
         $('<div id="navPanel"><nav class="panel-nav"></nav></div>').appendTo("body");
         const $panelNav = $("#navPanel .panel-nav");
 
-        // Insert a mobile-language wrapper at the top, then the generated nav list
-        $panelNav
-            .append('<div id="mobileLangWrap" class="mobile-lang-wrap"></div>')
-            .append(navListHtml);
+        // Add language slot at top, then the nav list
+        $panelNav.append('<div id="mobileLangWrap" class="mobile-lang-wrap"></div>');
+        $panelNav.append(navListHtml);
 
-        // Create floating titleBar (HTML5 UP hamburger)
-        // We'll hide the title text for mobile (only show the hamburger)
+        // Remove any desktop language <li> that navList() may have replicated
+        // (we’re using a dedicated mobile slot above)
+        $panelNav.find('a#languageToggleButton').parent('li').remove();
+
+        // Title bar (hamburger only; hide text via CSS)
         $('<div id="titleBar">' +
             '<a href="#navPanel" class="toggle"></a>' +
             '<span class="title">' + $("#logo").html() + "</span>" +
           "</div>").appendTo("body");
 
-        // Activate the panel
+        // Activate the slide-out panel
         $("#navPanel").panel({
             delay: 500,
             hideOnClick: true,
@@ -97,7 +97,7 @@ document.addEventListener("DOMContentLoaded", function () {
             window.location.href = target;
         };
 
-        // Desktop toggle (in the header nav)
+        // Desktop
         const desktopBtn = document.getElementById("languageToggleButton");
         if (desktopBtn) {
             desktopBtn.textContent = `${globe} ${label}`;
@@ -105,7 +105,7 @@ document.addEventListener("DOMContentLoaded", function () {
             desktopBtn.addEventListener("click", go);
         }
 
-        // Mobile toggle: inject as FIRST element inside the panel, above the links
+        // Mobile (insert at very top of panel)
         const mobileWrap = document.getElementById("mobileLangWrap");
         if (mobileWrap) {
             const mobileBtn = document.createElement("a");
@@ -170,13 +170,10 @@ document.addEventListener("DOMContentLoaded", function () {
                 font-weight: 700;
                 color: #1f2937; /* slate-800 */
             }
-            #nav > ul > li > a:hover {
-                color: #111827; /* slate-900 */
-            }
-            /* Active underline */
+            #nav > ul > li > a:hover { color: #111827; } /* slate-900 */
             #nav a.active-tab { border-bottom: 3px solid #007bff; }
 
-            /* Desktop language toggle style */
+            /* Desktop language toggle button */
             .lang-toggle {
                 display: inline-block;
                 padding: 0.4rem 0.8rem;
@@ -195,24 +192,28 @@ document.addEventListener("DOMContentLoaded", function () {
                 to   { opacity: 1; transform: translateY(0); }
             }
 
-            /* Mobile: ensure titleBar is at the top and clean */
-            #titleBar {
-                position: fixed;
-                top: 0; left: 0; right: 0;
-                z-index: 2000;
-            }
-            /* Hide the textual title in the mobile title bar — hamburger only */
-            #titleBar .title { display: none; }
-
-            /* Hide titleBar entirely on desktop */
+            /* Mobile title bar position & tidy */
+            #titleBar { position: fixed; top: 0; left: 0; right: 0; z-index: 2000; }
+            #titleBar .title { display: none; }          /* hide long site title on mobile */
             @media (min-width: 769px) { #titleBar { display: none; } }
 
-            /* Mobile panel typography */
-            #navPanel nav ul {
-                list-style: none;
-                margin: 0;
-                padding: 0;
+            /* --- MOBILE PANEL WIDTH & TYPOGRAPHY --- */
+            #navPanel {
+                width: 90vw;               /* wider panel for long labels */
+                max-width: 420px;          /* increase from default ~275px */
             }
+            #navPanel .panel-nav { padding-top: 8px; }
+
+            /* Make items wrap nicely (fix overlap of long labels) */
+            #navPanel nav a {
+                white-space: normal;       /* allow wrapping */
+                overflow-wrap: break-word;
+                word-break: break-word;
+                hyphens: auto;
+            }
+
+            /* Mobile list styles + bigger font */
+            #navPanel nav ul { list-style: none; margin: 0; padding: 0; }
             #navPanel nav a {
                 display: block;
                 padding: 0.95rem 1rem;
@@ -220,7 +221,7 @@ document.addEventListener("DOMContentLoaded", function () {
                 color: #111827;                     /* dark text */
                 text-decoration: none;
                 font-weight: 600;                   /* bold-ish */
-                font-size: 1.15rem;                 /* larger, readable */
+                font-size: 1.18rem;                 /* larger for readability */
                 line-height: 1.5;
             }
             #navPanel nav a:hover { background: #f3f4f6; }
@@ -237,10 +238,30 @@ document.addEventListener("DOMContentLoaded", function () {
                 background: #2563eb; /* blue-600 */
                 color: #fff !important;
                 border-radius: 8px;
-                padding: 0.6rem 0.8rem;
+                padding: 0.65rem 0.8rem;
                 font-weight: 800;
                 font-size: 1.05rem;
             }
+
+            /* --- CTA SECTION SLIMMER (desktop) --- */
+            /* Applies to your existing #cta block */
+            #cta {
+                padding: 2rem 1rem !important;      /* reduce vertical bulk */
+            }
+            #cta header h2 { font-size: 1.6rem !important; margin-bottom: 0.25rem !important; }
+            #cta header p  { font-size: 1rem !important; color: #374151 !important; }
+            #cta .buttons .button.primary {
+                padding: 0.65rem 1rem !important;
+                font-size: 0.95rem !important;
+                border-radius: 6px !important;
+            }
+
+            /* --- FOOTER TIGHTER + YOUTUBE ICON RED --- */
+            #footer { padding: 2rem 1rem !important; }
+            #footer .icons { gap: 0.5rem; }
+            #footer .icons .icon.circle { width: 2.5em; height: 2.5em; line-height: 2.5em; } /* consistent size */
+            #footer .icons .icon.circle.fa-youtube { background: #FF0000 !important; color: #fff !important; }
+            #footer .copyright { font-size: 0.95rem; color: #4b5563; }
         `;
         document.head.appendChild(s);
     }
