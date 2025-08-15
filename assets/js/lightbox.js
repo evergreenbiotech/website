@@ -77,10 +77,31 @@ document.addEventListener("DOMContentLoaded", () => {
   function preload(src) {
     return new Promise((resolve, reject) => {
       const im = new Image();
-      im.onload = () => resolve(im);
-      im.onerror = reject;
+      im.onload = () => resolve(src);
+      im.onerror = () => reject(new Error(`Failed to load: ${src}`));
       im.src = src;
     });
+  }
+
+  // Try sources in order; fall back gracefully
+  async function chooseBestSrc(imgEl) {
+    const candidates = [];
+    const data = imgEl.getAttribute('data-lb-src');
+    if (data) candidates.push(data);
+    if (imgEl.currentSrc && !candidates.includes(imgEl.currentSrc)) candidates.push(imgEl.currentSrc);
+    if (imgEl.src && !candidates.includes(imgEl.src)) candidates.push(imgEl.src);
+
+    for (const url of candidates) {
+      try {
+        console.info('[lightbox] trying', url);
+        await preload(url);
+        console.info('[lightbox] using', url);
+        return url;
+      } catch (err) {
+        console.warn('[lightbox]', err.message);
+      }
+    }
+    throw new Error('No candidate image loaded.');
   }
 
   // ---------- Open / Close ----------
@@ -100,22 +121,25 @@ document.addEventListener("DOMContentLoaded", () => {
     panY = Math.min(exY, Math.max(-exY, panY));
   }
 
-  function openLightbox(src, caption) {
+  async function openLightboxFor(imgEl) {
+    // Reset
     zoom = 1; panX = 0; panY = 0; applyTransform();
-    lbImg.src = ''; lbCap.textContent = '';
+    lbImg.src = ''; lbCap.textContent = imgEl.getAttribute('data-caption') || imgEl.alt || '';
     stage.classList.add('loading');
     overlay.classList.add('open');
     document.body.style.overflow = 'hidden';
 
-    preload(src).then(() => {
-      lbImg.src = src;
-      lbCap.textContent = caption || '';
+    try {
+      const best = await chooseBestSrc(imgEl);
+      lbImg.src = best;
+    } catch (err) {
+      console.error('[lightbox]', err.message);
+      // Leave caption so user sees something, but we can also close automatically:
+      // closeLightbox(); return;
+    } finally {
       stage.classList.remove('loading');
       zoom = 1; panX = 0; panY = 0; applyTransform();
-    }).catch(() => {
-      stage.classList.remove('loading');
-      lbCap.textContent = caption || '';
-    });
+    }
   }
 
   function closeLightbox() {
@@ -207,28 +231,23 @@ document.addEventListener("DOMContentLoaded", () => {
 
   function getTouchDist(a, b) { return Math.hypot(a.clientX - b.clientX, a.clientY - b.clientY); }
 
-  // ---------- Event delegation (works with IMG or .image wrapper) ----------
+  // ---------- Event delegation (IMG or .image wrapper) ----------
   const main = document.getElementById('main');
   if (!main) return;
 
   main.addEventListener('click', (e) => {
-    // 1) If clicked on an IMG, use it
+    // If clicked on an IMG
     let img = e.target.closest('#main img:not([data-no-lightbox])');
-
-    // 2) Else, if clicked on a .image wrapper, take its first IMG
+    // Or on a .image wrapper (with an IMG inside)
     if (!img) {
       const wrapper = e.target.closest('#main .image');
       if (wrapper) img = wrapper.querySelector('img:not([data-no-lightbox])');
     }
-
     if (!img) return;
 
-    // No default jump, no bubbling to theme handlers
     e.preventDefault();
     e.stopPropagation();
 
-    const src = img.getAttribute('data-lb-src') || img.currentSrc || img.src;
-    const cap = img.getAttribute('data-caption') || img.alt || '';
-    openLightbox(src, cap);
-  }, true); // capture phase so we run before theme scripts
+    openLightboxFor(img);
+  }, true); // capture phase to beat theme handlers
 });
