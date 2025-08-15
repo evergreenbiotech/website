@@ -15,9 +15,9 @@ document.addEventListener("DOMContentLoaded", function () {
             headerContainer.innerHTML = data;
 
             initDropotron();
-            initLanguageToggle();
             highlightActiveTab();
             setupMobileMenu();
+            initLanguageToggle();
             setupStickyHeader();
         })
         .catch(err => console.error("Header load error:", err));
@@ -44,30 +44,26 @@ document.addEventListener("DOMContentLoaded", function () {
         toggleBtn.style.padding = "0.4rem 0.8rem";
         toggleBtn.style.borderRadius = "4px";
         toggleBtn.style.fontWeight = "bold";
+        toggleBtn.style.display = "inline-block";
 
-        toggleBtn.addEventListener("click", function (e) {
+        const toggleAction = function (e) {
             e.preventDefault();
             const targetUrl = isChinesePage
                 ? currentPath.replace("-cn.html", ".html")
                 : currentPath.replace(".html", "-cn.html");
             window.location.href = targetUrl;
-        });
+        };
+        toggleBtn.addEventListener("click", toggleAction);
 
-        // Clone into mobile menu
+        // Clone into mobile menu at top
         const mobileNav = document.querySelector("#navPanel nav ul");
         if (mobileNav) {
             const li = document.createElement("li");
+            li.style.marginBottom = "15px"; // gap under toggle
             const mobileBtn = toggleBtn.cloneNode(true);
+            mobileBtn.addEventListener("click", toggleAction);
             li.appendChild(mobileBtn);
             mobileNav.insertBefore(li, mobileNav.firstChild);
-
-            mobileBtn.addEventListener("click", function (e) {
-                e.preventDefault();
-                const targetUrl = isChinesePage
-                    ? currentPath.replace("-cn.html", ".html")
-                    : currentPath.replace(".html", "-cn.html");
-                window.location.href = targetUrl;
-            });
         }
     }
 
@@ -93,24 +89,31 @@ document.addEventListener("DOMContentLoaded", function () {
 
     function setupMobileMenu() {
         if (window.jQuery && $.fn.panel) {
-            $('#navPanel').remove(); // remove any duplicate
-            $('<div id="navPanel">' +
-                '<nav>' + $('#nav').html() + '</nav>' +
-              '</div>').appendTo('body')
-              .panel({
-                  delay: 500,
-                  hideOnClick: true,
-                  hideOnSwipe: true,
-                  resetScroll: true,
-                  resetForms: true,
-                  side: 'left'
-              });
-
+            $('#navPanel').remove();
             $('#titleBar').remove();
+
+            // Build mobile menu with increased font size
+            $('<div id="navPanel">' +
+                '<nav><ul style="font-size: 1.2rem; line-height: 1.6;"></ul></nav>' +
+              '</div>').appendTo('body');
+
+            // Copy menu items from desktop nav
+            $('#nav > ul').children().clone(true, true).appendTo('#navPanel nav ul');
+
+            // Build title bar without pushing logo to bottom
             $('<div id="titleBar">' +
                 '<a href="#navPanel" class="toggle"></a>' +
                 '<span class="title">' + $('#logo').html() + '</span>' +
               '</div>').appendTo('body');
+
+            $('#navPanel').panel({
+                delay: 500,
+                hideOnClick: true,
+                hideOnSwipe: true,
+                resetScroll: true,
+                resetForms: true,
+                side: 'left'
+            });
         }
     }
 
