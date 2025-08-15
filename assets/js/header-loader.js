@@ -17,17 +17,19 @@ document.addEventListener("DOMContentLoaded", function () {
         .then(html => {
             headerContainer.innerHTML = html;
 
-            // Build mobile nav first so we can inject the mobile-language toggle into it.
-            setupMobileNavPanel();          // builds #navPanel + #titleBar (top-left hamburger)
-            initDropotronDesktop();         // fade animation for desktop dropdowns
-            initLanguageToggle();           // desktop + mobile toggle
-            highlightActiveTab();           // underline current page
-            setupStickyHeader();            // hide on scroll down, show on scroll up
-            injectStyles();                 // all styling (mobile font size, colors, etc.)
+            // Build mobile panel BEFORE adding the mobile language toggle
+            buildMobilePanel();            // clean HTML5 UP-style panel using navList()
+            initDropotronDesktop();        // desktop dropdown fade
+            initLanguageToggle();          // desktop + mobile lang toggle (top of panel)
+            highlightActiveTab();          // underline current page (desktop)
+            setupStickyHeader();           // smooth hide/show on scroll
+            injectStyles();                // colors, fonts, layout fixes
         })
         .catch(err => console.error("Failed to load header:", err));
 
-    // --- Desktop dropdowns (Dropotron) ---
+    // ---------------------------
+    // Desktop: Dropotron dropdown
+    // ---------------------------
     function initDropotronDesktop() {
         if (window.jQuery && $.fn.dropotron) {
             $("#nav > ul").dropotron({
@@ -37,38 +39,41 @@ document.addEventListener("DOMContentLoaded", function () {
                 offsetY: -15
             });
         } else {
-            console.warn("Dropotron not found; desktop dropdowns won't animate.");
+            console.warn("Dropotron not found; dropdowns won't animate.");
         }
     }
 
-    // --- Mobile hamburger (HTML5 UP panel) ---
-    function setupMobileNavPanel() {
-        if (!(window.jQuery && $.fn.panel)) return;
+    // --------------------------------------------------
+    // Mobile: build navPanel using HTML5 UP's navList()
+    // --------------------------------------------------
+    function buildMobilePanel() {
+        if (!(window.jQuery && $.fn.panel && $.fn.navList)) {
+            console.warn("HTML5 UP panel/navList not available; mobile menu may not work.");
+            return;
+        }
 
-        // Remove any old instances first (prevents duplicates)
+        // Remove any existing instances to avoid duplication
         $("#navPanel, #titleBar").remove();
 
-        // Build panel container (we’ll clone menu into this)
-        $('<div id="navPanel"><nav><ul class="panel-list"></ul></nav></div>').appendTo("body");
+        // Build the slide-out panel
+        // navList() returns a flat list of links (anchors) with indent classes
+        const navListHtml = $("#nav").navList(); // string of <ul>...</ul> links
+        $('<div id="navPanel"><nav class="panel-nav"></nav></div>').appendTo("body");
+        const $panelNav = $("#navPanel .panel-nav");
 
-        // Clone original <li> items from desktop nav
-        const $panelList = $("#navPanel nav ul.panel-list");
-        $("#nav > ul")
-            .children()
-            .clone(true, true)
-            .appendTo($panelList);
+        // Insert a mobile-language wrapper at the top, then the generated nav list
+        $panelNav
+            .append('<div id="mobileLangWrap" class="mobile-lang-wrap"></div>')
+            .append(navListHtml);
 
-        // After cloning, remove the desktop language LI from the panel
-        // (we will inject a dedicated mobile toggle at the very top)
-        $panelList.find("#languageToggleButton").closest("li").remove();
-
-        // Build the floating title bar (top-left hamburger)
+        // Create floating titleBar (HTML5 UP hamburger)
+        // We'll hide the title text for mobile (only show the hamburger)
         $('<div id="titleBar">' +
             '<a href="#navPanel" class="toggle"></a>' +
             '<span class="title">' + $("#logo").html() + "</span>" +
           "</div>").appendTo("body");
 
-        // Activate the slide-out panel
+        // Activate the panel
         $("#navPanel").panel({
             delay: 500,
             hideOnClick: true,
@@ -79,9 +84,10 @@ document.addEventListener("DOMContentLoaded", function () {
         });
     }
 
-    // --- Language toggle (desktop + mobile) ---
+    // ---------------------------------
+    // Language toggle (desktop + mobile)
+    // ---------------------------------
     function initLanguageToggle() {
-        const desktopBtn = document.getElementById("languageToggleButton");
         const label = isCN ? "English" : "中文";
         const globe = "🌐";
         const go = (e) => {
@@ -91,31 +97,29 @@ document.addEventListener("DOMContentLoaded", function () {
             window.location.href = target;
         };
 
-        // Desktop toggle
+        // Desktop toggle (in the header nav)
+        const desktopBtn = document.getElementById("languageToggleButton");
         if (desktopBtn) {
             desktopBtn.textContent = `${globe} ${label}`;
-            desktopBtn.addEventListener("click", go);
             desktopBtn.classList.add("lang-toggle");
+            desktopBtn.addEventListener("click", go);
         }
 
-        // Mobile toggle: inject at the TOP of the navPanel list with spacing below
-        const panelList = document.querySelector("#navPanel nav ul.panel-list");
-        if (panelList) {
-            const li = document.createElement("li");
-            li.className = "panel-lang-li";
+        // Mobile toggle: inject as FIRST element inside the panel, above the links
+        const mobileWrap = document.getElementById("mobileLangWrap");
+        if (mobileWrap) {
             const mobileBtn = document.createElement("a");
             mobileBtn.href = "#";
             mobileBtn.textContent = `${globe} ${label}`;
-            mobileBtn.className = "lang-toggle";
+            mobileBtn.className = "lang-toggle mobile";
             mobileBtn.addEventListener("click", go);
-            li.appendChild(mobileBtn);
-
-            // Insert at the very top
-            panelList.insertBefore(li, panelList.firstChild);
+            mobileWrap.appendChild(mobileBtn);
         }
     }
 
-    // --- Active page marker (desktop) ---
+    // ------------------------
+    // Active page (desktop)
+    // ------------------------
     function highlightActiveTab() {
         const currentFile = currentPath.split("/").pop();
         document.querySelectorAll("#nav a").forEach(a => {
@@ -126,7 +130,9 @@ document.addEventListener("DOMContentLoaded", function () {
         });
     }
 
-    // --- Sticky header show/hide on scroll ---
+    // --------------------------------------
+    // Sticky header: hide on scroll down/up
+    // --------------------------------------
     function setupStickyHeader() {
         const header = document.getElementById("header");
         if (!header) return;
@@ -146,35 +152,31 @@ document.addEventListener("DOMContentLoaded", function () {
         });
     }
 
-    // --- All styling (scoped) ---
+    // --------------------------------------
+    // Styles (scoped so we don't fight main.css)
+    // --------------------------------------
     function injectStyles() {
+        const prev = document.getElementById("header-dynamic-styles");
+        if (prev) prev.remove();
+
         const s = document.createElement("style");
         s.id = "header-dynamic-styles";
         s.textContent = `
-            /* Fix titleBar position so logo never appears at the bottom */
-            #titleBar {
-                position: fixed;
-                top: 0;
-                left: 0;
-                right: 0;
-                z-index: 2000;
-            }
-            /* Ensure page content isn't hidden behind fixed header */
-            body { scroll-padding-top: 80px; }
+            /* Prevent content hiding behind fixed header */
+            html { scroll-padding-top: 80px; }
 
-            /* Desktop nav styling: bolder + darker for readability */
+            /* Desktop readability: bolder, darker */
             #nav > ul > li > a {
                 font-weight: 700;
-                color: #1f2937;           /* darker gray for contrast */
+                color: #1f2937; /* slate-800 */
             }
-            #nav > ul > li > a:hover { color: #111827; } /* even darker on hover */
-
-            /* Active tab underline */
-            #nav a.active-tab {
-                border-bottom: 3px solid #007bff;
+            #nav > ul > li > a:hover {
+                color: #111827; /* slate-900 */
             }
+            /* Active underline */
+            #nav a.active-tab { border-bottom: 3px solid #007bff; }
 
-            /* Desktop language toggle button look */
+            /* Desktop language toggle style */
             .lang-toggle {
                 display: inline-block;
                 padding: 0.4rem 0.8rem;
@@ -186,55 +188,60 @@ document.addEventListener("DOMContentLoaded", function () {
             }
             .lang-toggle:hover { filter: brightness(0.95); }
 
-            /* Dropotron fade-in polish */
-            .dropotron {
-                animation: dropdownFadeIn 150ms ease both;
-            }
+            /* Dropotron fade polish */
+            .dropotron { animation: dropdownFadeIn 150ms ease both; }
             @keyframes dropdownFadeIn {
                 from { opacity: 0; transform: translateY(4px); }
                 to   { opacity: 1; transform: translateY(0); }
             }
 
-            /* MOBILE PANEL STYLES */
-            #navPanel nav ul.panel-list {
-                list-style: none;
-                padding-left: 0;
-                margin: 0;
-                font-size: 1.12rem;       /* bigger, more readable */
-                line-height: 1.6;
+            /* Mobile: ensure titleBar is at the top and clean */
+            #titleBar {
+                position: fixed;
+                top: 0; left: 0; right: 0;
+                z-index: 2000;
             }
-            #navPanel nav ul.panel-list li {
-                list-style: none;
-            }
-            #navPanel nav ul.panel-list a {
-                display: block;
-                padding: 0.9rem 1rem;
-                border-bottom: 1px solid #e5e7eb;
-                color: #111827;            /* dark text on white bg */
-                font-weight: 600;          /* bold-ish */
-                text-decoration: none;
-            }
-            #navPanel nav ul.panel-list a:hover {
-                background: #f3f4f6;
-            }
+            /* Hide the textual title in the mobile title bar — hamburger only */
+            #titleBar .title { display: none; }
 
-            /* Mobile language toggle at top with spacing below */
-            #navPanel .panel-lang-li {
-                margin-bottom: 10px;
-                border-bottom: 1px solid #e5e7eb;
+            /* Hide titleBar entirely on desktop */
+            @media (min-width: 769px) { #titleBar { display: none; } }
+
+            /* Mobile panel typography */
+            #navPanel nav ul {
+                list-style: none;
+                margin: 0;
+                padding: 0;
             }
-            #navPanel .panel-lang-li .lang-toggle {
-                background: #2563eb;       /* stronger blue for prominence */
-                color: white !important;
-                border-radius: 6px;
-                font-weight: 700;
-                margin: 10px;
+            #navPanel nav a {
+                display: block;
+                padding: 0.95rem 1rem;
+                border-bottom: 1px solid #e5e7eb;  /* light separator */
+                color: #111827;                     /* dark text */
+                text-decoration: none;
+                font-weight: 600;                   /* bold-ish */
+                font-size: 1.15rem;                 /* larger, readable */
+                line-height: 1.5;
+            }
+            #navPanel nav a:hover { background: #f3f4f6; }
+
+            /* Mobile language toggle at the very top with spacing */
+            .mobile-lang-wrap {
+                padding: 10px;
+                border-bottom: 1px solid #e5e7eb;
+                margin-bottom: 6px;
+            }
+            .mobile-lang-wrap .lang-toggle.mobile {
+                display: block;
                 text-align: center;
+                background: #2563eb; /* blue-600 */
+                color: #fff !important;
+                border-radius: 8px;
+                padding: 0.6rem 0.8rem;
+                font-weight: 800;
+                font-size: 1.05rem;
             }
         `;
-        // Remove previous (if hot-replaced)
-        const old = document.getElementById("header-dynamic-styles");
-        if (old) old.remove();
         document.head.appendChild(s);
     }
 });
