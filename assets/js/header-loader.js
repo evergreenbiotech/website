@@ -5,32 +5,23 @@ document.addEventListener("DOMContentLoaded", function () {
         return;
     }
 
-    const currentPathname = window.location.pathname;
-    const headerFile = currentPathname.includes("-cn.html")
-        ? "header-cn.html"
-        : "header.html";
+    const currentPath = window.location.pathname;
+    const headerFile = currentPath.includes('-cn.html') ? 'header-cn.html' : 'header.html';
 
     fetch(headerFile)
-        .then(res => {
-            if (!res.ok) throw new Error(`HTTP error: ${res.status}`);
-            return res.text();
-        })
-        .then(data => {
-            headerContainer.innerHTML = data;
+        .then(res => res.text())
+        .then(html => {
+            headerContainer.innerHTML = html;
 
-            // After header is loaded
-            initDropotronMenu();
-            initMobileNavPanel();
+            initDropDown();
+            initMobileMenu();
             initLanguageToggle();
-            styleLanguageToggle();
             highlightActivePage();
-            enableFixedHeader();
+            enableStickyHeader();
         })
-        .catch(err => {
-            console.error("Failed to load header:", err);
-        });
+        .catch(err => console.error("Header load error:", err));
 
-    function initDropotronMenu() {
+    function initDropDown() {
         if (window.jQuery && $.fn.dropotron) {
             $('#nav > ul').dropotron({
                 offsetY: -15,
@@ -41,97 +32,123 @@ document.addEventListener("DOMContentLoaded", function () {
         }
     }
 
-    function initMobileNavPanel() {
-        if (window.jQuery) {
-            // Remove old navPanel if exists
-            $('#navPanel, #titleBar').remove();
+    function initMobileMenu() {
+        const nav = document.getElementById("nav");
+        const menuBtn = document.createElement("button");
+        menuBtn.id = "mobile-menu-btn";
+        menuBtn.innerHTML = "☰";
+        menuBtn.classList.add("mobile-menu-btn");
 
-            $('<div id="titleBar">' +
-                '<a href="#navPanel" class="toggle"></a>' +
-                '<span class="title">' + $('#logo').html() + '</span>' +
-              '</div>').appendTo('body');
+        const langBtnMobile = document.createElement("button");
+        langBtnMobile.id = "mobile-lang-btn";
+        langBtnMobile.innerHTML = "🌐";
+        langBtnMobile.classList.add("mobile-lang-btn");
 
-            $('<div id="navPanel">' +
-                '<nav>' + $('#nav').html() + '</nav>' +
-              '</div>').appendTo('body')
-              .panel({
-                  delay: 500,
-                  hideOnClick: true,
-                  hideOnSwipe: true,
-                  resetScroll: true,
-                  resetForms: true,
-                  side: 'left'
-              });
-        }
+        const header = document.getElementById("header");
+        const logo = document.getElementById("logo");
+
+        header.insertBefore(menuBtn, logo);
+        header.appendChild(langBtnMobile);
+
+        menuBtn.addEventListener("click", () => {
+            nav.classList.toggle("open");
+        });
+
+        langBtnMobile.addEventListener("click", () => {
+            toggleLanguage();
+        });
     }
 
     function initLanguageToggle() {
-        const btn = document.getElementById("languageToggleButton");
-        if (!btn) return;
+        const langBtnDesktop = document.getElementById("languageToggleButton");
+        if (!langBtnDesktop) return;
 
-        const isCN = currentPathname.includes("-cn.html");
-        if (isCN) {
-            btn.innerHTML = '<img src="assets/images/gb-flag.png" alt="English" style="height:14px;margin-right:5px;"> English';
-            btn.title = "Switch to English";
-            btn.addEventListener("click", e => {
-                e.preventDefault();
-                window.location.href = currentPathname.replace("-cn.html", ".html");
-            });
-        } else {
-            btn.innerHTML = '<img src="assets/images/cn-flag.png" alt="中文" style="height:14px;margin-right:5px;"> 中文';
-            btn.title = "Switch to Chinese";
-            btn.addEventListener("click", e => {
-                e.preventDefault();
-                window.location.href = currentPathname.replace(".html", "-cn.html");
-            });
-        }
+        langBtnDesktop.innerHTML = "🌐";
+        langBtnDesktop.addEventListener("click", (e) => {
+            e.preventDefault();
+            toggleLanguage();
+        });
     }
 
-    function styleLanguageToggle() {
-        const btn = document.getElementById("languageToggleButton");
-        if (!btn) return;
-
-        btn.style.backgroundColor = "#007bff";
-        btn.style.color = "#fff";
-        btn.style.border = "2px solid #0056b3";
-        btn.style.borderRadius = "4px";
-        btn.style.padding = "6px 10px";
-        btn.style.fontWeight = "bold";
-        btn.style.display = "inline-flex";
-        btn.style.alignItems = "center";
+    function toggleLanguage() {
+        const isCN = currentPath.includes('-cn.html');
+        const newUrl = isCN
+            ? currentPath.replace('-cn.html', '.html')
+            : currentPath.replace('.html', '-cn.html');
+        window.location.href = newUrl;
     }
 
     function highlightActivePage() {
         const links = document.querySelectorAll("#nav a");
-        const currentPage = window.location.pathname.split("/").pop();
         links.forEach(link => {
-            const linkPage = link.getAttribute("href");
-            if (linkPage && linkPage === currentPage) {
-                link.style.fontWeight = "bold";
-                link.style.color = "#007bff";
+            if (link.href && link.href === window.location.href) {
+                link.classList.add("active-tab");
             }
         });
     }
 
-    function enableFixedHeader() {
+    function enableStickyHeader() {
         const header = document.getElementById("header");
-        if (!header) return;
-        header.style.position = "fixed";
-        header.style.top = "0";
-        header.style.left = "0";
-        header.style.width = "100%";
-        header.style.zIndex = "1000";
-        header.style.transition = "top 0.3s ease-in-out";
-
-        let prevScroll = window.pageYOffset;
-        window.addEventListener("scroll", function () {
-            let currScroll = window.pageYOffset;
-            if (prevScroll > currScroll) {
-                header.style.top = "0";
+        let lastScroll = 0;
+        window.addEventListener("scroll", () => {
+            const currentScroll = window.pageYOffset;
+            if (currentScroll > lastScroll) {
+                header.style.transform = "translateY(-100%)";
             } else {
-                header.style.top = "-80px"; // hides header when scrolling down
+                header.style.transform = "translateY(0)";
             }
-            prevScroll = currScroll;
+            lastScroll = currentScroll;
         });
     }
+
+    // Add CSS directly here
+    const style = document.createElement("style");
+    style.textContent = `
+        #header {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            background: #fff;
+            box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+            z-index: 999;
+            display: flex;
+            align-items: center;
+            padding: 0.5rem 1rem;
+            transition: transform 0.3s ease;
+        }
+        #logo { flex: 1; }
+        #nav ul { list-style: none; margin: 0; padding: 0; display: flex; align-items: center; }
+        #nav li { position: relative; }
+        #nav a { padding: 0.75rem 1rem; display: block; font-weight: bold; text-decoration: none; color: #333; }
+        #nav a:hover { background: #f5f5f5; }
+        #nav a.active-tab { border-bottom: 3px solid #007BFF; }
+        .language-toggle-wrapper a {
+            border: 2px solid #007BFF;
+            border-radius: 6px;
+            padding: 0.5rem;
+            font-weight: normal;
+            background: #f0f8ff;
+        }
+        /* Mobile */
+        .mobile-menu-btn, .mobile-lang-btn {
+            background: #007BFF;
+            color: white;
+            border: none;
+            font-size: 1.5rem;
+            padding: 0.5rem 0.75rem;
+            margin: 0 0.25rem;
+            border-radius: 4px;
+            cursor: pointer;
+        }
+        #nav { display: none; }
+        #nav.open { display: block; position: absolute; top: 60px; left: 0; width: 100%; background: white; }
+        #nav.open ul { flex-direction: column; }
+        #nav.open a { font-size: 1.2rem; border-bottom: 1px solid #ddd; }
+        @media(min-width: 769px) {
+            .mobile-menu-btn, .mobile-lang-btn { display: none; }
+            #nav { display: block !important; position: static; }
+        }
+    `;
+    document.head.appendChild(style);
 });
