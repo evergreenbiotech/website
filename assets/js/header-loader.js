@@ -273,6 +273,35 @@ document.addEventListener("DOMContentLoaded", function () {
       #navPanel .panel-list a.link.depth-1 { padding-left: 2rem; }
       #navPanel .panel-list a.link.depth-2 { padding-left: 2.75rem; }
 
+/* --- NEW: better spacing for depth-1 submenu items on mobile --- */
+#navPanel .panel-list a.link.depth-1 {
+  display: block;
+  /* add vertical spacing so adjacent items don’t look stuck together */
+  margin-top: 8px;
+  margin-bottom: 8px;
+
+  /* increase touch target a bit */
+  padding-top: 1.05rem;
+  padding-bottom: 1.05rem;
+
+  /* subtle separators so each item reads as its own row */
+  border-top: 1px solid rgba(255,255,255,0.14);
+  border-bottom: 1px solid rgba(255,255,255,0.08);
+}
+
+/* extra gap when two depth-1 items are consecutive */
+#navPanel .panel-list a.link.depth-1 + li a.link.depth-1,
+#navPanel .panel-list li.depth-1-item + li.depth-1-item a.link.depth-1 {
+  margin-top: 10px;
+}
+
+/* don’t draw a top border on the very first depth-1 item in the group */
+#navPanel .panel-list li.depth-1-item:first-of-type a.link.depth-1 {
+  border-top: none;
+}
+
+
+
       /* ── NEW: Stronger spacing for ALL depth-1 items (fixes clustering) ── */
       #navPanel .panel-list li.depth-1-item { margin: 6px 0; }                 /* NEW */
       #navPanel .panel-list li.depth-1-item a.link.depth-1 {                   /* NEW */
