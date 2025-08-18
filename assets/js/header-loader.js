@@ -286,14 +286,22 @@ document.addEventListener("DOMContentLoaded", function () {
 
       #navPanel .panel-list a.link {
         display: block;
-        padding: 0.95rem 1rem;
+        padding: 1rem 1rem;
         border-bottom: 1px solid rgba(255,255,255,0.08);
         text-decoration: none !important;
-        line-height: 1.5;
+        line-height: 1.6;
         white-space: normal;
         overflow-wrap: break-word;
         word-break: break-word;
         hyphens: auto;
+        margin-bottom: 4px; /* add spacing between items */
+      }
+      
+      /* extra spacing between depth-1 siblings */
+      #navPanel .panel-list li.depth-1-item + li.depth-1-item {
+        margin-top: 6px;
+      }
+
       }
       #navPanel .panel-list a.link.depth-0 { font-weight: 800; color: #ffffff !important; }
       #navPanel .panel-list a.link.depth-1,
