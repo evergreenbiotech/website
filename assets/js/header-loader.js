@@ -31,6 +31,7 @@ document.addEventListener("DOMContentLoaded", function () {
     })
     .catch((err) => console.error("Header load failed:", err));
 
+  // ------------------ Desktop dropdown (Dropotron) ------------------
   function initDropotron() {
     if (window.jQuery && $.fn.dropotron) {
       $("#nav > ul").dropotron({
@@ -42,6 +43,7 @@ document.addEventListener("DOMContentLoaded", function () {
     }
   }
 
+  // ------------------ Kill duplicate/legacy panels ------------------
   function dedupeThemePanels() {
     const panels = Array.from(document.querySelectorAll("#navPanel"));
     const buttons = Array.from(document.querySelectorAll("#navButton"));
@@ -51,20 +53,25 @@ document.addEventListener("DOMContentLoaded", function () {
     if (themePanel) themePanel.closest("#navPanel")?.remove();
   }
 
+  // ------------------ Mobile menu: hamburger + panel + backdrop ------------------
   function buildMobileMenu() {
+    // Clean previous instances
     document.getElementById("navPanel")?.remove();
     document.getElementById("navButton")?.remove();
     document.getElementById("navBackdrop")?.remove();
 
+    // Backdrop
     const backdrop = document.createElement("div");
     backdrop.id = "navBackdrop";
     document.body.appendChild(backdrop);
 
+    // Hamburger
     const navButton = document.createElement("div");
     navButton.id = "navButton";
     navButton.innerHTML = '<a href="#navPanel" class="toggle" role="button" aria-label="Open Menu"></a>';
     document.body.appendChild(navButton);
 
+    // Panel
     const panel = document.createElement("div");
     panel.id = "navPanel";
     panel.innerHTML = '<nav class="panel-nav"><ul class="panel-list"></ul></nav>';
@@ -72,7 +79,7 @@ document.addEventListener("DOMContentLoaded", function () {
 
     const panelList = panel.querySelector(".panel-list");
 
-    // Language toggle row (no individual handler — handled by delegate below)
+    // Language toggle row
     const langLi = document.createElement("li");
     langLi.className = "panel-lang-li";
     const langA = document.createElement("a");
@@ -82,7 +89,7 @@ document.addEventListener("DOMContentLoaded", function () {
     langLi.appendChild(langA);
     panelList.appendChild(langLi);
 
-    // Build links from desktop nav
+    // Build links from desktop nav (skip desktop lang button)
     const desktopNav = document.getElementById("nav");
     let linksAdded = 0;
 
@@ -117,6 +124,7 @@ document.addEventListener("DOMContentLoaded", function () {
       panelList.appendChild(fallback);
     }
 
+    // Open/close helpers
     const OPEN = "mobile-menu-open";
     const openMenu = () => {
       document.body.classList.add(OPEN);
@@ -140,31 +148,47 @@ document.addEventListener("DOMContentLoaded", function () {
     backdrop.addEventListener("click", closeOnce, { passive: false });
     backdrop.addEventListener("touchstart", closeOnce, { passive: false });
 
-    // *** SINGLE DELEGATED HANDLER: one tap navigates + closes ***
-    panel.addEventListener("click", (e) => {
+    // === ONE-TAP NAVIGATION (capture phase to beat theme listeners) ===
+    const delegateHandler = (e) => {
       const a = e.target.closest("a");
       if (!a) return;
 
+      // Stop any other handlers immediately (including theme code)
+      if (typeof e.stopImmediatePropagation === "function") e.stopImmediatePropagation();
+
+      // Don’t rely on the default link behavior (some libs preventDefault)
+      // We will navigate ourselves.
+      const isLang = a.classList.contains("lang-toggle");
+      let targetHref = null;
+
+      if (isLang) {
+        targetHref = isCN ? currentPath.replace("-cn.html", ".html")
+                          : currentPath.replace(".html", "-cn.html");
+      } else {
+        const href = a.getAttribute("href");
+        if (href && href !== "#") targetHref = href;
+      }
+
+      if (targetHref) {
+        // Close the drawer then navigate — no second tap needed
+        closeMenu();
+        // Navigate immediately; no setTimeout required when we stop others in capture
+        window.location.assign(targetHref);
+      } else {
+        // If it’s a non-navigating item, just close
+        closeMenu();
+      }
+
+      // Prevent default after we’ve decided navigation to avoid hash jumps
       e.preventDefault();
-      e.stopPropagation();
+    };
 
-      // Language toggle handled here too
-      if (a.classList.contains("lang-toggle")) {
-        const target = isCN ? currentPath.replace("-cn.html", ".html")
-                            : currentPath.replace(".html", "-cn.html");
-        closeMenu();
-        setTimeout(() => (window.location.href = target), 120);
-        return;
-      }
-
-      const href = a.getAttribute("href");
-      if (href && href !== "#") {
-        closeMenu();
-        setTimeout(() => (window.location.href = href), 120);
-      }
-    });
+    // Use capture phase so our handler runs BEFORE theme bubbling listeners
+    panel.addEventListener("click", delegateHandler, { capture: true, passive: false });
+    panel.addEventListener("touchend", delegateHandler, { capture: true, passive: false });
   }
 
+  // ------------------ Language toggle (desktop) ------------------
   function initLanguageToggle() {
     const desktopBtn = document.getElementById("languageToggleButton");
     if (desktopBtn) {
@@ -174,11 +198,12 @@ document.addEventListener("DOMContentLoaded", function () {
         e.preventDefault();
         const target = isCN ? currentPath.replace("-cn.html", ".html")
                             : currentPath.replace(".html", "-cn.html");
-        window.location.href = target;
+        window.location.assign(target);
       });
     }
   }
 
+  // ------------------ Active tab underline (desktop) ------------------
   function highlightActiveTab() {
     const currentFile = currentPath.split("/").pop();
     document.querySelectorAll("#nav a").forEach(a => {
@@ -187,6 +212,7 @@ document.addEventListener("DOMContentLoaded", function () {
     });
   }
 
+  // ------------------ Mark “来源 / Source” lines ------------------
   function markSourceLines() {
     const main = document.getElementById("main");
     if (!main) return;
@@ -200,6 +226,7 @@ document.addEventListener("DOMContentLoaded", function () {
     });
   }
 
+  // ------------------ Sticky header ------------------
   function setupStickyHeader() {
     const header = document.getElementById("header");
     if (!header) return;
@@ -214,13 +241,13 @@ document.addEventListener("DOMContentLoaded", function () {
     });
   }
 
+  // ------------------ Small style tweaks ------------------
   function injectDynamicStyles() {
     document.getElementById("header-dynamic-styles")?.remove();
     const s = document.createElement("style");
     s.id = "header-dynamic-styles";
     s.textContent = `
       html { scroll-padding-top: 80px; }
-
       @media (min-width: 841px) {
         #main p  { color: #1f2937; }
         #main h2 { color: #111827; }
@@ -257,7 +284,6 @@ document.addEventListener("DOMContentLoaded", function () {
       body.mobile-menu-open #navBackdrop { opacity: 1; pointer-events: auto; }
 
       :root { --nav-panel-w: 260px; }
-
       #navPanel {
         position: fixed;
         top: 0; left: 0; height: 100vh;
@@ -280,8 +306,6 @@ document.addEventListener("DOMContentLoaded", function () {
       #navPanel .panel-nav { padding-top: 8px; }
       #navPanel .panel-list { list-style: none; margin: 0; padding: 0; }
       #navPanel .panel-list li { list-style: none; }
-
-      /* override theme fixed row height that causes visual double-tap feel */
       #navPanel .link { height: auto !important; line-height: 1.55 !important; }
 
       #navPanel .panel-list a.link {
@@ -303,7 +327,6 @@ document.addEventListener("DOMContentLoaded", function () {
       #navPanel .panel-list a.link.depth-1 { padding-left: 2rem !important; }
       #navPanel .panel-list a.link.depth-2 { padding-left: 2.75rem !important; }
 
-      /* stronger spacing for depth-1 submenu items */
       #navPanel .panel-list li.depth-1-item { margin: 10px 0 !important; }
       #navPanel .panel-list li.depth-1-item a.link.depth-1 {
         padding-top: 1.05rem !important;
