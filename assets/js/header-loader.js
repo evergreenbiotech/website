@@ -114,14 +114,18 @@ document.addEventListener("DOMContentLoaded", function () {
         depth = Math.max(0, depth - 1);
 
         const li = document.createElement("li");
+        li.classList.add(`depth-${depth}-item`);  // <-- NEW: depth class on LI
+        
         const clone = document.createElement("a");
         clone.href = a.getAttribute("href");
         clone.className = "link";
         clone.classList.add(`depth-${depth}`);
         clone.textContent = a.textContent.trim();
+        
         li.appendChild(clone);
         panelList.appendChild(li);
         linksAdded++;
+
       });
     }
 
