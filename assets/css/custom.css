@@ -1,13 +1,19 @@
-/* Mobile nav width override (HTML5 UP Twenty) */
+/* Site overrides */
+
+/* Set the mobile drawer width once, used by header-loader via CSS var */
+:root { --nav-panel-w: 220px; }
+
 @media screen and (max-width: 840px) {
   #navPanel {
-    width: 220px !important;
-    transform: translateX(-220px) !important;
+    width: var(--nav-panel-w);
+    transform: translateX(calc(-1 * var(--nav-panel-w)));
   }
-  body.navPanel-visible #page-wrapper {
-    transform: translateX(220px) !important;
+  body.navPanel-visible #page-wrapper,          /* legacy class from theme */
+  body.mobile-menu-open #page-wrapper {         /* our class */
+    transform: translateX(var(--nav-panel-w));
   }
-  body.navPanel-visible #navButton {
-    transform: translateX(220px) !important;
+  body.navPanel-visible #navButton,             /* keep parity with theme */
+  body.mobile-menu-open #navButton {
+    transform: translateX(var(--nav-panel-w));
   }
 }
