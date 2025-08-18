@@ -72,6 +72,7 @@ document.addEventListener("DOMContentLoaded", function () {
 
     const panelList = panel.querySelector(".panel-list");
 
+    // Language toggle row (no individual handler — handled by delegate below)
     const langLi = document.createElement("li");
     langLi.className = "panel-lang-li";
     const langA = document.createElement("a");
@@ -81,6 +82,7 @@ document.addEventListener("DOMContentLoaded", function () {
     langLi.appendChild(langA);
     panelList.appendChild(langLi);
 
+    // Build links from desktop nav
     const desktopNav = document.getElementById("nav");
     let linksAdded = 0;
 
@@ -127,25 +129,39 @@ document.addEventListener("DOMContentLoaded", function () {
       document.body.style.overflow = "";
     };
 
+    // Toggle button
     navButton.querySelector(".toggle").addEventListener("click", (e) => {
       e.preventDefault();
       if (document.body.classList.contains(OPEN)) closeMenu(); else openMenu();
     });
 
+    // One-tap close on backdrop
     const closeOnce = (e) => { e.preventDefault(); e.stopPropagation(); closeMenu(); };
     backdrop.addEventListener("click", closeOnce, { passive: false });
     backdrop.addEventListener("touchstart", closeOnce, { passive: false });
 
+    // *** SINGLE DELEGATED HANDLER: one tap navigates + closes ***
     panel.addEventListener("click", (e) => {
-      const t = e.target;
-      if (t.matches("a.link")) closeMenu();
-    });
+      const a = e.target.closest("a");
+      if (!a) return;
 
-    langA.addEventListener("click", (e) => {
       e.preventDefault();
-      const target = isCN ? currentPath.replace("-cn.html", ".html")
-                          : currentPath.replace(".html", "-cn.html");
-      window.location.href = target;
+      e.stopPropagation();
+
+      // Language toggle handled here too
+      if (a.classList.contains("lang-toggle")) {
+        const target = isCN ? currentPath.replace("-cn.html", ".html")
+                            : currentPath.replace(".html", "-cn.html");
+        closeMenu();
+        setTimeout(() => (window.location.href = target), 120);
+        return;
+      }
+
+      const href = a.getAttribute("href");
+      if (href && href !== "#") {
+        closeMenu();
+        setTimeout(() => (window.location.href = href), 120);
+      }
     });
   }
 
@@ -226,10 +242,7 @@ document.addEventListener("DOMContentLoaded", function () {
       .lang-toggle:hover { filter: brightness(0.95); }
 
       .dropotron { animation: dropdownFadeIn 150ms ease both; }
-      @keyframes dropdownFadeIn {
-        from { opacity: 0; transform: translateY(4px); }
-        to   { opacity: 1; transform: translateY(0); }
-      }
+      @keyframes dropdownFadeIn { from { opacity: 0; transform: translateY(4px); } to { opacity: 1; transform: translateY(0); } }
 
       #navButton { position: fixed; top: 0; left: 0; right: 0; z-index: 10001; }
       @media (min-width: 841px) { #navButton, #navBackdrop { display: none; } }
@@ -268,13 +281,9 @@ document.addEventListener("DOMContentLoaded", function () {
       #navPanel .panel-list { list-style: none; margin: 0; padding: 0; }
       #navPanel .panel-list li { list-style: none; }
 
-      /* --- OVERRIDES THE THEME'S 3em ROW HEIGHT --- */
-      #navPanel .link {
-        height: auto !important;
-        line-height: 1.55 !important;
-      }
+      /* override theme fixed row height that causes visual double-tap feel */
+      #navPanel .link { height: auto !important; line-height: 1.55 !important; }
 
-      /* Base link row styling */
       #navPanel .panel-list a.link {
         display: block;
         padding: 1rem 1rem !important;
@@ -284,19 +293,17 @@ document.addEventListener("DOMContentLoaded", function () {
         overflow-wrap: break-word;
         word-break: break-word;
         hyphens: auto;
-        margin: 0 !important; /* reset any theme margin */
+        margin: 0 !important;
       }
 
-      /* Differentiate main vs submenu items */
       #navPanel .panel-list a.link.depth-0 { font-weight: 800; color: #ffffff !important; }
       #navPanel .panel-list a.link.depth-1,
       #navPanel .panel-list a.link.depth-2 { font-weight: 600; color: rgba(255,255,255,0.9) !important; }
 
-      /* Indentation */
       #navPanel .panel-list a.link.depth-1 { padding-left: 2rem !important; }
       #navPanel .panel-list a.link.depth-2 { padding-left: 2.75rem !important; }
 
-      /* ── STRONGER SPACING FOR DEPTH-1 ITEMS (FIXES CLUSTERING) ── */
+      /* stronger spacing for depth-1 submenu items */
       #navPanel .panel-list li.depth-1-item { margin: 10px 0 !important; }
       #navPanel .panel-list li.depth-1-item a.link.depth-1 {
         padding-top: 1.05rem !important;
@@ -304,13 +311,10 @@ document.addEventListener("DOMContentLoaded", function () {
         border-top: 1px solid rgba(255,255,255,0.14) !important;
         border-bottom: 1px solid rgba(255,255,255,0.08) !important;
       }
-      #navPanel .panel-list li.depth-1-item:first-of-type a.link.depth-1 {
-        border-top: none !important;
-      }
+      #navPanel .panel-list li.depth-1-item:first-of-type a.link.depth-1 { border-top: none !important; }
 
       #navPanel .panel-list a.link:hover { background: rgba(255,255,255,0.06); }
 
-      /* Language toggle at top */
       #navPanel .panel-lang-li {
         margin: 10px 8px 6px 8px;
         padding-bottom: 10px;
@@ -329,16 +333,12 @@ document.addEventListener("DOMContentLoaded", function () {
       }
 
       @media (max-width: 840px) {
-        .button, .button.primary {
-          font-size: 1rem !important;
-          line-height: 3.25em !important;
-        }
+        .button, .button.primary { font-size: 1rem !important; line-height: 3.25em !important; }
         #main .source-line { letter-spacing: normal !important; text-align: left !important; }
         #main, #main *:not(#navPanel) { overflow-wrap: anywhere; word-break: break-word; }
         #main img { max-width: 100%; height: auto; }
       }
 
-      /* Footer icons */
       #footer .icons .icon.circle {
         width: 2.5em !important;
         height: 2.5em !important;
