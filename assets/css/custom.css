@@ -1,7 +1,7 @@
 /* Site overrides */
 
 /* Set the mobile drawer width once, used by header-loader via CSS var */
-:root { --nav-panel-w: min(80vw, 280px); }
+:root { --nav-panel-w: min(80vw, 300px); }
 
 
 @media screen and (max-width: 840px) {
