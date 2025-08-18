@@ -204,6 +204,16 @@ document.addEventListener("DOMContentLoaded", function () {
     });
   }
 
+(function ensureCustomCss() {
+  if (!document.querySelector('link[href*="assets/css/custom.css"]')) {
+    const link = document.createElement('link');
+    link.rel = 'stylesheet';
+    link.href = 'assets/css/custom.css';
+    document.head.appendChild(link);
+  }
+})();
+
+  
   // ------------------ Styles ------------------
   function injectStyles() {
     const PANEL_WIDTH = 360; // px
