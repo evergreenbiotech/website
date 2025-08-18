@@ -1,0 +1,13 @@
+/* Mobile nav width override (HTML5 UP Twenty) */
+@media screen and (max-width: 840px) {
+  #navPanel {
+    width: 220px !important;
+    transform: translateX(-220px) !important;
+  }
+  body.navPanel-visible #page-wrapper {
+    transform: translateX(220px) !important;
+  }
+  body.navPanel-visible #navButton {
+    transform: translateX(220px) !important;
+  }
+}
