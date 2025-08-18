@@ -18,3 +18,29 @@
     transform: translateX(var(--nav-panel-w));
   }
 }
+
+
+/* Mobile panel — make every depth-1 submenu item breathe */
+#navPanel .panel-list li.depth-1-item { 
+  display: block;
+  margin: 6px 0;
+}
+
+/* Extra gap between consecutive depth-1 items */
+#navPanel .panel-list li.depth-1-item + li.depth-1-item {
+  margin-top: 10px;
+}
+
+/* Ensure the clickable area has vertical padding and visible separators */
+#navPanel .panel-list li.depth-1-item a.link.depth-1 {
+  display: block;
+  padding-top: 0.95rem;
+  padding-bottom: 0.95rem;
+  border-top: 1px solid rgba(255,255,255,0.12);
+  border-bottom: 1px solid rgba(255,255,255,0.08);
+}
+
+/* Don’t draw a top border on the very first depth-1 item in the group */
+#navPanel .panel-list li.depth-1-item:first-of-type a.link.depth-1 {
+  border-top: none;
+}
