@@ -1,37 +1,3 @@
-/* Site overrides */
-
-/* Set the mobile drawer width once, used by header-loader via CSS var */
-:root { --nav-panel-w: min(80vw, 280px); }
-
-@media screen and (max-width: 840px) {
-  #navPanel {
-    width: var(--nav-panel-w);
-    transform: translateX(calc(-1 * var(--nav-panel-w)));
-  }
-  body.navPanel-visible #page-wrapper,
-  body.mobile-menu-open #page-wrapper {
-    transform: translateX(var(--nav-panel-w));
-  }
-  body.navPanel-visible #navButton,
-  body.mobile-menu-open #navButton {
-    transform: translateX(var(--nav-panel-w));
-  }
-}
-
-/* Mobile panel — depth-1 submenu spacing */
-#navPanel .panel-list li.depth-1-item { margin: 6px 0; }
-#navPanel .panel-list li.depth-1-item + li.depth-1-item { margin-top: 10px; }
-#navPanel .panel-list li.depth-1-item a.link.depth-1 {
-  display: block;
-  padding-top: 0.95rem;
-  padding-bottom: 0.95rem;
-  border-top: 1px solid rgba(255,255,255,0.12);
-  border-bottom: 1px solid rgba(255,255,255,0.08);
-}
-#navPanel .panel-list li.depth-1-item:first-of-type a.link.depth-1 {
-  border-top: none;
-}
-
 /* -------- YouTube embed (click-to-play) -------- */
 
 /* When loaded (iframe), keep 16:9 and center */
@@ -103,16 +69,4 @@
 .video-playbtn:focus-visible {
   outline: 3px solid #2563eb; /* blue focus ring */
   outline-offset: 4px;
-}
-
-/* Footer icons: unify size + YouTube red */
-#footer .icons .icon.circle {
-  width: 2.5em !important;
-  height: 2.5em !important;
-  line-height: 2.5em !important;
-  font-size: 1.25em !important;
-}
-.icon.circle.fa-youtube {
-  background: #FF0000 !important;
-  color: #fff !important;
 }
