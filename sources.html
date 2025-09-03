@@ -1,72 +1,158 @@
-/* -------- YouTube embed (click-to-play) -------- */
+<!DOCTYPE HTML>
+<!--
+  Twenty by HTML5 UP
+  html5up.net | @ajlkn
+  Free for personal and commercial use under the CCA 3.0 license (html5up.net/license)
+-->
+<html>
+  <head>
+    <title>Sources - Evergreen Biotechnology Singapore by Ark Haven</title>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1, user-scalable=no" />
+    <link rel="stylesheet" href="assets/css/main.css" />
+    <!-- NEW: custom CSS for the video thumb/player -->
+    <link rel="stylesheet" href="assets/css/custom.css" />
+    <noscript><link rel="stylesheet" href="assets/css/noscript.css" /></noscript>
+  </head>
+  <body class="sources is-preload">
+    <div id="page-wrapper">
 
-/* When loaded (iframe), keep 16:9 and center */
-.video-wrapper {
-  position: relative;
-  padding-bottom: 56.25%; /* 16:9 ratio */
-  height: 0;
-  overflow: hidden;
-  max-width: 100%;
-  margin: 0 auto 2em auto; /* center + spacing below */
-}
-.video-wrapper iframe {
-  position: absolute;
-  top: 0; left: 0;
-  width: 100%; height: 100%;
-  border: none;
-}
+<div id="header-container"></div>
 
-/* Thumbnail preview that swaps to iframe on click */
-.video-thumb {
-  position: relative;
-  padding-bottom: 56.25%; /* 16:9 */
-  height: 0;
-  overflow: hidden;
-  background-size: cover;
-  background-position: center center;
-  background-repeat: no-repeat;
-  border-radius: 6px;
-  cursor: pointer;
-  max-width: 100%;
-  margin: 0 auto 2em auto;
-  box-shadow: 0 2px 6px rgba(0,0,0,.15);
-}
-.video-thumb::after {
-  /* subtle dark gradient for legibility of play button */
-  content: "";
-  position: absolute; inset: 0;
-  background: linear-gradient(to top, rgba(0,0,0,.35), rgba(0,0,0,0.05));
-}
+      <!-- Main -->
+      <article id="main">
 
-/* Big play button */
-.video-playbtn {
-  position: absolute;
-  z-index: 1;
-  inset: 50% auto auto 50%;
-  transform: translate(-50%, -50%);
-  width: 84px;
-  height: 84px;
-  border-radius: 50%;
-  border: 0;
-  outline: 0;
-  background: rgba(255,255,255,.9);
-  cursor: pointer;
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
-}
-.video-playbtn::before {
-  content: "";
-  display: block;
-  margin-left: 5px; /* nudge to feel centered */
-  width: 0; height: 0;
-  border-left: 22px solid #e11d48;  /* rose-600 triangle */
-  border-top: 14px solid transparent;
-  border-bottom: 14px solid transparent;
-}
-.video-playbtn:hover { filter: brightness(0.96); }
-.video-thumb:focus-visible .video-playbtn,
-.video-playbtn:focus-visible {
-  outline: 3px solid #2563eb; /* blue focus ring */
-  outline-offset: 4px;
-}
+        <header class="special container">
+          <span class="icon solid fa-industry"></span>
+          <h2><strong>Sources</strong></h2>
+          <p>We have partnered with established Traditional Chinese Medicinal production bases for direct importing and distribution.</p>
+        </header>
+
+        <!-- One -->
+        <section class="wrapper style4 container">
+
+          <!-- Content -->
+          <div class="content">
+            <section>
+              <div class="image featured">
+                <img src="images/sourcepic01_v1.jpg" data-lb-src="images/sourcepic01_full.jpg" alt="Huoshan, Anhui highlands">
+              </div>
+
+              <!-- NEW: Click-to-play YouTube thumbnail, placed BEFORE the first header in this section -->
+              <!-- Custom thumbnail: put your file at images/sources_video_thumb.jpg
+                   If you prefer the YouTube default, replace the URL with:
+                   https://img.youtube.com/vi/Sl2UDVTDtrc/hqdefault.jpg -->
+              <div class="video-thumb"
+                   role="button" tabindex="0"
+                   aria-label="Play video"
+                   data-yt="Sl2UDVTDtrc"
+                   style="background-image:url('images/sources_video_thumb.jpg');">
+                <button class="video-playbtn" aria-label="Play"></button>
+              </div>
+
+              <header>
+                <h3><strong>Dendrobium huoshanense originates from Huoshan County, Anhui Province, China</strong></h3>
+              </header>
+              <p>&bull; Pristine highlands at 800+ metres above sea level, located at 31° North Latitude.<br>
+              &bull; 5-year cultivation period, absorbing the essence of nature over 1,825 days.<br>
+              &bull; Protected original species base in Huoshan, supported by expert-led research teams.</p>
+            </section>
+
+            <section>
+              <div class="image featured">
+                <img src="images/sourcepic02_v1.jpg" data-lb-src="images/sourcepic01_full.jpg" alt="Huoshan, Anhui highlands">
+              </div>
+
+              </a>
+              <header>
+                <h3><strong>18-Step Traditional Processing Method</strong></h3>
+              </header>
+              <p>&bull; Strict procedures passed down through generations<br>
+              &bull; A thousand years of heritage, preserved<br>
+              &bull; Every stage reflects artisan dedication and precision</p>
+            </section>
+
+            <section>
+              <div class="image featured">
+                <img src="images/sourcepic03_v1.jpg" data-lb-src="images/sourcepic01_full.jpg" alt="Huoshan, Anhui highlands">
+              </div>
+
+              <header>
+                <h3><strong>Scientific Dendrobium Production · Modernised Management</strong></h3>
+              </header>
+              <p>&bull; Scientific Approach: Equipped with an in-house R&D centre<br>
+              &bull; Standardisation: Certified quality control systems in place<br>
+              &bull; Digitalisation: Full traceability through IoT-based systems<br>
+              &bull; Intelligent Management: Smart technologies ensure precision and efficiency</p>
+
+              <p>Anhui Mulongshan Tiepi Dendrobium Biotechnology Development Co., Ltd. (安徽牧龙山铁皮石斛生物科技开发有限公司) is the first full-industry-chain Tiepi Dendrobium enterprise in Anhui Province The only enterprise in the province with a big data system to scientifically manage the full supply chain The exclusive designated supplier of Tiepi Dendrobium products to Beijing Tongrentang (北京同仁堂) in Anhui. The only company in the region inheriting intangible cultural heritage processing techniques for Tiepi Dendrobium.</p>
+            </section>
+
+          </div>
+
+        </section>
+
+      </article>
+
+      <!-- Footer -->
+      <div id="footer-container"></div>
+
+    </div>
+
+    <!-- Scripts -->
+    <script src="assets/js/jquery.min.js"></script>
+    <script src="assets/js/jquery.dropotron.min.js"></script>
+    <script src="assets/js/jquery.scrolly.min.js"></script>
+    <script src="assets/js/jquery.scrollgress.min.js"></script>
+    <script src="assets/js/jquery.scrollex.min.js"></script>
+    <script src="assets/js/browser.min.js"></script>
+    <script src="assets/js/breakpoints.min.js"></script>
+    <script src="assets/js/util.js"></script>
+
+    <!-- Header (already on your pages) -->
+    <script src="assets/js/header-loader.js"></script>
+
+    <!-- Optional image popup (for sources.html etc.) -->
+    <script src="assets/js/lightbox.js"></script>
+
+    <!-- Theme main last -->
+    <script src="assets/js/main.js"></script>
+
+    <!-- New: Footer loader last -->
+    <script src="assets/js/footer-loader.js"></script>
+
+    <!-- NEW: Tiny inline helper to swap thumbnail -> iframe -->
+    <script>
+      (function () {
+        function loadYT(el) {
+          var id = el.getAttribute('data-yt');
+          if (!id) return;
+          var wrap = document.createElement('div');
+          wrap.className = 'video-wrapper';
+          var iframe = document.createElement('iframe');
+          iframe.setAttribute('allowfullscreen', '');
+          iframe.setAttribute('title', 'YouTube video');
+          iframe.setAttribute('allow', 'accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture');
+          iframe.src = 'https://www.youtube.com/embed/' + id + '?autoplay=1&rel=0';
+          wrap.appendChild(iframe);
+          el.replaceWith(wrap);
+        }
+
+        document.addEventListener('click', function (e) {
+          var t = e.target.closest('.video-thumb');
+          if (t) loadYT(t);
+        }, { passive: true });
+
+        document.addEventListener('keydown', function (e) {
+          if (e.key !== 'Enter' && e.key !== ' ') return;
+          var active = document.activeElement;
+          if (active && active.classList && active.classList.contains('video-thumb')) {
+            e.preventDefault();
+            loadYT(active);
+          }
+        });
+      })();
+    </script>
+
+  </body>
+</html>
