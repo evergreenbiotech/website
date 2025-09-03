@@ -3,35 +3,24 @@
 /* Set the mobile drawer width once, used by header-loader via CSS var */
 :root { --nav-panel-w: min(80vw, 280px); }
 
-
 @media screen and (max-width: 840px) {
   #navPanel {
     width: var(--nav-panel-w);
     transform: translateX(calc(-1 * var(--nav-panel-w)));
   }
-  body.navPanel-visible #page-wrapper,          /* legacy class from theme */
-  body.mobile-menu-open #page-wrapper {         /* our class */
+  body.navPanel-visible #page-wrapper,
+  body.mobile-menu-open #page-wrapper {
     transform: translateX(var(--nav-panel-w));
   }
-  body.navPanel-visible #navButton,             /* keep parity with theme */
+  body.navPanel-visible #navButton,
   body.mobile-menu-open #navButton {
     transform: translateX(var(--nav-panel-w));
   }
 }
 
-
-/* Mobile panel — make every depth-1 submenu item breathe */
-#navPanel .panel-list li.depth-1-item { 
-  display: block;
-  margin: 6px 0;
-}
-
-/* Extra gap between consecutive depth-1 items */
-#navPanel .panel-list li.depth-1-item + li.depth-1-item {
-  margin-top: 10px;
-}
-
-/* Ensure the clickable area has vertical padding and visible separators */
+/* Mobile panel — depth-1 submenu spacing */
+#navPanel .panel-list li.depth-1-item { margin: 6px 0; }
+#navPanel .panel-list li.depth-1-item + li.depth-1-item { margin-top: 10px; }
 #navPanel .panel-list li.depth-1-item a.link.depth-1 {
   display: block;
   padding-top: 0.95rem;
@@ -39,8 +28,34 @@
   border-top: 1px solid rgba(255,255,255,0.12);
   border-bottom: 1px solid rgba(255,255,255,0.08);
 }
-
-/* Don’t draw a top border on the very first depth-1 item in the group */
 #navPanel .panel-list li.depth-1-item:first-of-type a.link.depth-1 {
   border-top: none;
+}
+
+/* Center YouTube embed */
+.video-wrapper {
+  position: relative;
+  padding-bottom: 56.25%; /* 16:9 ratio */
+  height: 0;
+  overflow: hidden;
+  max-width: 100%;
+  margin: 0 auto 2em auto; /* center + spacing below */
+}
+.video-wrapper iframe {
+  position: absolute;
+  top: 0; left: 0;
+  width: 100%; height: 100%;
+  border: none;
+}
+
+/* Footer icons: unify size + YouTube red */
+#footer .icons .icon.circle {
+  width: 2.5em !important;
+  height: 2.5em !important;
+  line-height: 2.5em !important;
+  font-size: 1.25em !important;
+}
+.icon.circle.fa-youtube {
+  background: #FF0000 !important;
+  color: #fff !important;
 }
